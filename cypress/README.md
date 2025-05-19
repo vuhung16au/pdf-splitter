@@ -1,6 +1,6 @@
 # Testing Guide for PDF Splitter
 
-This project uses [Cypress](https://www.cypress.io/) for both component and end-to-end testing, including cross-browser compatibility testing.
+This project uses [Cypress](https://www.cypress.io/) for both component and end-to-end testing, including cross-browser compatibility and accessibility testing.
 
 ## Quick Start
 
@@ -12,9 +12,18 @@ npm run test:e2e
 npm run test:chrome
 npm run test:firefox
 npm run test:safari
+npm run test:edge
 
 # Run tests in all browsers
 npm run test:browsers
+
+# Run accessibility tests in specific browser
+npm run test:a11y:chrome
+npm run test:a11y:firefox
+npm run test:a11y:edge
+
+# Run accessibility tests in all browsers
+npm run test:a11y:all
 
 # Run all tests
 npm test
@@ -43,7 +52,8 @@ E2E tests verify that the application works correctly from the user's perspectiv
 ### Current Status
 
 ✅ **E2E Tests**: All passing and stable  
-⚠️ **Component Tests**: Being updated for React 19 compatibility
+⚠️ **Component Tests**: Being updated for React 19 compatibility  
+⚠️ **Accessibility Tests**: 9 passing, 8 failing across all browsers
 
 - DragDropArea component tests: 4 passing, 2 failing
 - PdfUploader component tests: 4 passing, 1 failing
@@ -51,6 +61,22 @@ E2E tests verify that the application works correctly from the user's perspectiv
 - E2E Complete Workflow tests: 2 passing
 - E2E Multiple PDF Files tests: 4 passing
 - E2E Responsive UI tests: 6 passing
+- Accessibility tests: 9 passing, 8 failing (consistent across Chrome, Firefox, and Edge)
+
+### Testing Environments
+
+You can run tests against either your local development server or the production server:
+
+```bash
+# Test against localhost (default)
+./run-tests.sh e2e chrome
+
+# Test against production server
+./run-tests.sh e2e chrome production
+
+# Run browser compatibility tests against production
+./run-tests.sh e2e chrome production true
+```
 
 ### Using npm scripts
 
@@ -73,6 +99,12 @@ npm run cypress run --spec "cypress/e2e/multiple-pdfs.cy.ts"
 # Run responsive UI tests
 npm run cypress run --spec "cypress/e2e/responsive-ui.cy.ts"
 
+# Run accessibility tests in Chrome
+npm run test:a11y:chrome
+
+# Run accessibility tests in all browsers (Chrome, Firefox, Edge)
+npm run test:a11y:all
+
 # Open Cypress interactive runner
 npm run cypress
 ```
@@ -87,6 +119,23 @@ npm run cypress
 
 This will open the Cypress Test Runner where you can choose to run component tests or E2E tests.
 
+### Testing Against Production
+
+To run tests against the production deployment at the Vercel URL:
+
+```bash
+# Run all E2E tests against production
+./run-tests.sh e2e chrome production
+
+# Run browser compatibility tests against production
+./run-tests.sh e2e chrome production true
+
+# Test specific browser against production
+./run-tests.sh e2e firefox production
+```
+
+The script automatically detects the target environment and configures Cypress accordingly without starting a local development server when running against production.
+
 ## Test File Structure
 
 ```bash
@@ -99,12 +148,19 @@ cypress/
 │   ├── home.cy.ts          # Tests for home page functionality
 │   ├── complete-workflow.cy.ts # Tests for single PDF workflow
 │   ├── multiple-pdfs.cy.ts # Tests for multiple PDF workflow
-│   └── responsive-ui.cy.ts # Tests for UI responsiveness across different screen sizes
+│   ├── responsive-ui.cy.ts # Tests for UI responsiveness across different screen sizes
+│   ├── accessibility.cy.ts # Tests for WCAG 2.1 accessibility compliance
+│   └── browser-compatibility.cy.ts # Tests for cross-browser compatibility
 ├── fixtures/               # Test data files
+│   ├── a11y-test.pdf       # PDF test file for accessibility tests
+│   └── sample.pdf          # Sample PDF for general testing
 ├── support/                # Support files and custom commands
 │   ├── commands.ts         # Custom Cypress commands
+│   ├── a11y-commands.ts    # Accessibility testing commands
 │   ├── component.ts        # Component test configuration
 │   └── e2e.ts              # E2E test configuration
+├── screenshots/            # Test failure screenshots
+│   └── accessibility.cy.ts/# Accessibility test failure screenshots
 └── tsconfig.json           # TypeScript configuration for tests
 ```
 
@@ -297,6 +353,58 @@ To run the responsive UI tests:
 npm run cypress run --spec "cypress/e2e/responsive-ui.cy.ts"
 ```
 
+## Accessibility Testing
+
+Our application is committed to meeting WCAG 2.1 accessibility standards. We run comprehensive accessibility tests across multiple browsers to ensure our interface is accessible to all users, including those using assistive technologies.
+
+### Running Accessibility Tests
+
+To run the accessibility tests in a specific browser:
+
+```bash
+# Run in Chrome
+npm run test:a11y:chrome
+
+# Run in Firefox
+npm run test:a11y:firefox
+
+# Run in Edge
+npm run test:a11y:edge
+
+# Run in all browsers
+npm run test:a11y:all
+```
+
+### Accessibility Test Structure
+
+The accessibility tests are organized according to the four WCAG 2.1 principles:
+
+1. **Perceivable** - Information and user interface components must be presentable to users in ways they can perceive.
+   - Testing for text alternatives for images
+   - Proper heading structure
+   - Sufficient color contrast
+   - Text resizing without loss of content
+
+2. **Operable** - User interface components and navigation must be operable.
+   - Keyboard accessibility
+   - Proper focus management
+   - Tab order for interactive elements
+   - Sufficient time for interactions
+
+3. **Understandable** - Information and operation of the user interface must be understandable.
+   - Predictable navigation
+   - Clear feedback and error messages
+   - Instructions for form elements
+
+4. **Robust** - Content must be robust enough to be interpreted by a wide variety of user agents.
+   - Valid HTML structure
+   - Proper ARIA roles for custom interactive elements
+   - Associated labels with interactive elements
+
+### Cross-Browser Accessibility Testing
+
+We use the `run-a11y-cross-browser.sh` script to run accessibility tests across Chrome, Firefox, and Edge browsers to ensure consistent accessibility support. Test results and screenshots are saved in the `cypress/screenshots/accessibility.cy.ts/` directory.
+
 ## Troubleshooting
 
 ### Common Issues
@@ -320,11 +428,24 @@ npm run cypress run --spec "cypress/e2e/responsive-ui.cy.ts"
    - When testing file downloads, you may encounter issues with the saveAs stub
    - For reliable tests, focus on verifying UI state changes rather than the actual download
 
-# Screenshots 
+5. **Accessibility Test Failures**
+   - Color contrast issues are common and can be fixed by adjusting theme colors
+   - Keyboard accessibility issues often require adding proper `tabindex` attributes
+   - Some tests may fail due to missing `role` attributes on custom components
+   - When running `cy.click()` on multiple elements, use `{ multiple: true }` option or refine selectors
+   - File selection issues in tests often relate to problems with the test files rather than the app
+
+## Screenshots
+
+### Browser Compatibility & Responsive UI
 
 ![Browser Compatibility](../images/browser-compatibility.png) ![Responsive UI](../images/responsive-ui.png) ![PDF Splitter on Vercel](../images/vercel-screenshot.png)
 
-![alt text](../images/PDF-Split-Failed.png)
+### Test Failures & Diagnostics
+![PDF Split Failed](../images/PDF-Split-Failed.png)
+![Responsive UI Testing](../images/responsive-ui.png) 
+![Deployment Failed](../images/vercel-deployment-failed.png)
 
-![alt text](../images/responsive-ui.png) ![alt text](../images/vercel-deployment-failed.png)
+### Accessibility Testing
+The latest accessibility test screenshots are stored in the `cypress/screenshots/accessibility.cy.ts/` directory. These show the specific WCAG failures identified by our automated tests and help guide our accessibility improvements.
 

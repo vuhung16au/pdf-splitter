@@ -102,24 +102,37 @@ export default function PdfUploader() {
         <DragDropArea onFilesDrop={handleFilesDrop} isLoading={isLoading} />
 
         {error && (
-          <div className="w-full max-w-xl text-center p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-lg">
+          <div 
+            className="w-full max-w-xl text-center p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-lg"
+            role="alert"
+            aria-live="assertive"
+          >
             {error}
           </div>
         )}
 
         {uploadedFiles.length > 0 && (
-          <div className="w-full max-w-xl bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-            <h3 className="text-lg font-medium mb-2">
+          <div 
+            className="w-full max-w-xl bg-white dark:bg-gray-800 rounded-lg shadow p-4"
+            aria-labelledby="selected-files-heading"
+          >
+            <h3 
+              id="selected-files-heading" 
+              className="text-lg font-medium mb-2"
+            >
               Selected Files ({uploadedFiles.length})
             </h3>
-            <ul className="max-h-40 overflow-y-auto">
+            <ul 
+              className="max-h-40 overflow-y-auto" 
+              aria-label="List of selected PDF files"
+            >
               {uploadedFiles.map((file, index) => (
                 <li
                   key={index}
                   className="text-sm py-1 flex justify-between items-center"
                 >
                   <span className="truncate max-w-[300px] pr-4">{file.name}</span>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-500" aria-label={`Size: ${(file.size / 1024).toFixed(1)} kilobytes`}>
                     {(file.size / 1024).toFixed(1)} KB
                   </span>
                 </li>
@@ -130,7 +143,9 @@ export default function PdfUploader() {
               <button
                 onClick={handleProcessFiles}
                 disabled={isLoading}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition-colors disabled:bg-blue-400"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition-colors disabled:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                aria-label="Split PDF files into individual pages"
+                aria-busy={isLoading}
               >
                 {isLoading ? "Processing..." : "Split PDFs"}
               </button>
@@ -138,7 +153,8 @@ export default function PdfUploader() {
               <button
                 onClick={clearFiles}
                 disabled={isLoading}
-                className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 py-2 px-4 rounded-md transition-colors disabled:opacity-50"
+                className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 py-2 px-4 rounded-md transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                aria-label="Clear selected files"
               >
                 Clear
               </button>
@@ -147,7 +163,11 @@ export default function PdfUploader() {
         )}
 
         {processingStatus && (
-          <div className="w-full max-w-xl text-center p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-lg">
+          <div 
+            className="w-full max-w-xl text-center p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-lg"
+            aria-live="polite"
+            role="status"
+          >
             {processingStatus}
           </div>
         )}

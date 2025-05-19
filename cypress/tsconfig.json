@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "es6",
     "lib": ["es6", "dom", "dom.iterable"],
-    "types": ["cypress", "node"],
+    "types": ["cypress", "node", "cypress-axe"],
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,

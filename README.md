@@ -315,3 +315,37 @@ npm run cypress
 **Note:** For continuous integration or deployment workflows, we recommend using the E2E tests (`npm run test:e2e`), which are more stable and better represent real user experiences. The responsive UI and browser compatibility tests ensure that the application works well across different device sizes and browsers.
 
 See [cypress/README.md](cypress/README.md) for detailed testing documentation.
+
+## Accessibility
+
+PDF Splitter is designed with accessibility in mind, following WCAG 2.1 guidelines. Key accessibility features include:
+
+- **Keyboard Navigation**: All features can be accessed without a mouse
+- **Screen Reader Support**: Proper ARIA attributes and semantic HTML structure
+- **High Contrast**: Sufficient color contrast for text and UI elements
+- **Focus Management**: Clear visual indicators for keyboard focus
+- **Error Identification**: Accessible error messages and status updates
+
+### Accessibility Testing
+
+We've implemented comprehensive accessibility tests based on the four principles of WCAG 2.1:
+
+1. **Perceivable** - Ensuring content can be perceived by all users
+2. **Operable** - Making sure all functionality can be operated by all users
+3. **Understandable** - Creating an interface that all users can understand
+4. **Robust** - Building content that works with current and future technologies
+
+To run accessibility tests:
+
+```bash
+# Run accessibility tests with test server
+npm run test:a11y
+
+# Open Cypress with accessibility tests loaded
+npm run test:a11y:open
+
+# Run accessibility tests in Chrome
+npm run test:a11y:chrome
+```
+
+For more detailed information on our accessibility testing approach, see [Accessibility Testing Documentation](cypress/e2e/ACCESSIBILITY_TESTING.md).

@@ -110,54 +110,67 @@ export default function DragDropArea({ onFilesDrop, isLoading }: DragDropAreaPro
 
   return (
     <div
-      onDragEnter={handleDragEnter}
-      onDragLeave={handleDragLeave}
-      onDragOver={handleDragOver}
-      onDrop={handleDrop}
-      className={`w-full max-w-xl p-8 border-2 border-dashed rounded-lg transition-all ${
+      className={`w-full border-dashed rounded-lg p-6 mb-8 text-center flex flex-col items-center justify-center transition-all ${
         isDragging
-          ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-          : dragError 
-            ? "border-red-400 bg-red-50 dark:bg-red-900/10"
-            : "border-gray-300 dark:border-gray-700"
-      } ${isLoading ? "opacity-70 cursor-not-allowed" : "cursor-pointer"}`}
+          ? "border-blue-500 bg-blue-50 border-4"
+          : "border-gray-300 border-2"
+      } ${isLoading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
       onClick={handleButtonClick}
+      data-testid="pdf-uploader"
+      role="region"
+      aria-label="PDF file upload area"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          handleButtonClick();
+        }
+      }}
     >
+      {dragError && (
+        <div className="text-red-500 mb-4" aria-live="assertive" role="alert">
+          {dragError}
+        </div>
+      )}
+      
       <input
         type="file"
         ref={fileInputRef}
-        className="hidden"
         onChange={handleFileInputChange}
         accept="application/pdf"
+        className="hidden"
         multiple
+        aria-label="Upload PDF files"
         disabled={isLoading}
       />
-      <div className="flex flex-col items-center justify-center space-y-4">
-        <Image 
-          src="/file.svg" 
-          alt="Upload PDF" 
-          width={64} 
-          height={64}
-          className="w-16 h-16 text-gray-400 dark:text-gray-600"
-        />
-        <div className="text-center">
-          <p className="mb-2 text-sm font-medium">
-            {isLoading ? "Processing..." : "Drag and drop PDF files here"}
+      
+      {!isLoading ? (
+        <>
+          <Image
+            src="/file.svg"
+            alt="Upload PDF icon"
+            width={64}
+            height={64}
+            className="mb-4"
+          />
+          <h2 className="text-xl font-semibold mb-2">Drag and drop PDF files here</h2>
+          <p className="text-gray-600">
+            or{" "}
+            <span className="text-blue-500 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded" tabIndex={0} role="button" aria-label="click to select PDF files">
+              click to select PDF files
+            </span>
           </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            {isLoading 
-              ? "Please wait while we split your PDFs" 
-              : "or click to select PDF files"
-            }
-          </p>
-          
-          {dragError && (
-            <p className="mt-2 text-xs text-red-600 dark:text-red-400">
-              {dragError}
-            </p>
-          )}
+          <p className="mt-4 text-sm text-gray-500">Max file size: 100MB</p>
+        </>
+      ) : (
+        <div className="flex flex-col items-center" aria-live="polite">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+          <p className="text-gray-600">Processing...</p>
         </div>
-      </div>
+      )}
     </div>
   );
 }

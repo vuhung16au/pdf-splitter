@@ -19,7 +19,13 @@
     "test:edge": "./run-tests.sh e2e edge",
     "test:compat:chrome": "npx cypress run --browser chrome --spec 'cypress/e2e/browser-compatibility.cy.ts'",
     "test:compat:edge": "npx cypress run --browser edge --spec 'cypress/e2e/browser-compatibility.cy.ts'",
-    "test:browsers": "npm run test:compat:chrome && npm run test:compat:edge"
+    "test:browsers": "npm run test:compat:chrome && npm run test:compat:edge",
+    "test:a11y": "start-server-and-test dev http://localhost:3000 'cypress run --spec cypress/e2e/accessibility.cy.ts'",
+    "test:a11y:open": "start-server-and-test dev http://localhost:3000 'cypress open --e2e --browser chrome --spec cypress/e2e/accessibility.cy.ts'",
+    "test:a11y:chrome": "start-server-and-test dev http://localhost:3000 'cypress run --browser chrome --spec cypress/e2e/accessibility.cy.ts'",
+    "test:a11y:firefox": "start-server-and-test dev http://localhost:3000 'cypress run --browser firefox --spec cypress/e2e/accessibility.cy.ts'",
+    "test:a11y:edge": "start-server-and-test dev http://localhost:3000 'cypress run --browser edge --spec cypress/e2e/accessibility.cy.ts'",
+    "test:a11y:all": "./run-a11y-cross-browser.sh"
   },
   "dependencies": {
     "file-saver": "^2.0.5",
@@ -39,7 +45,9 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/sinon": "^17.0.4",
+    "axe-core": "^4.10.3",
     "cypress": "^14.3.3",
+    "cypress-axe": "^1.6.0",
     "start-server-and-test": "^2.0.12",
     "tailwindcss": "^4",
     "typescript": "^5"
