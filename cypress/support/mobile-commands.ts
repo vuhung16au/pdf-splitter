@@ -2,6 +2,21 @@
  * Custom commands for mobile testing
  */
 
+declare global {
+  namespace Cypress {
+    interface Chainable {
+      touch(eventType: string, options?: { clientX?: number; clientY?: number }): Chainable<JQuery<HTMLElement>>;
+      swipe(direction: 'left' | 'right' | 'up' | 'down', distance?: number): Chainable<JQuery<HTMLElement>>;
+      longPress(duration?: number): Chainable<JQuery<HTMLElement>>;
+      pinch(scale?: number): Chainable<JQuery<HTMLElement>>;
+      doubleTap(): Chainable<JQuery<HTMLElement>>;
+      mobileFileUpload(file: File): Chainable<JQuery<HTMLElement>>;
+      hasTouchTargetSize(minSize?: number): Chainable<JQuery<HTMLElement>>;
+      hasProperSpacing(minSpacing?: number): Chainable<JQuery<HTMLElement>>;
+    }
+  }
+}
+
 // Add custom command for touch events
 Cypress.Commands.add('touch', { prevSubject: 'element' }, (subject, eventType, options = {}) => {
   const defaultOptions = {
@@ -62,7 +77,7 @@ Cypress.Commands.add('mobileFileUpload', { prevSubject: 'element' }, (subject, f
 
 // Add custom command for checking touch target size
 Cypress.Commands.add('hasTouchTargetSize', { prevSubject: 'element' }, (subject, minSize = 44) => {
-  return cy.wrap(subject).then(($el) => {
+  return cy.wrap(subject).then(($el: JQuery<HTMLElement>) => {
     const height = $el.height();
     const width = $el.width();
     
@@ -75,10 +90,10 @@ Cypress.Commands.add('hasTouchTargetSize', { prevSubject: 'element' }, (subject,
 
 // Add custom command for checking element spacing
 Cypress.Commands.add('hasProperSpacing', { prevSubject: 'element' }, (subject, minSpacing = 8) => {
-  return cy.wrap(subject).then(($el) => {
+  return cy.wrap(subject).then(($el: JQuery<HTMLElement>) => {
     const nextEl = $el.next();
     if (nextEl.length) {
-      const spacing = nextEl.offset().top - $el.offset().top;
+      const spacing = nextEl.offset()?.top - ($el.offset()?.top || 0);
       expect(spacing).to.be.greaterThan(minSpacing - 1);
     }
     return cy.wrap($el);

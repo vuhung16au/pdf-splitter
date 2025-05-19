@@ -175,15 +175,12 @@ describe('Accessibility Tests', () => {
     
     it('should have interactive controls with proper focusability', () => {
       // Upload a PDF file to make buttons visible
-      cy.get('@testPdf').then(testFile => {
-        const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(testFile);
-        
-        cy.get('[data-testid="pdf-uploader"]').find('input[type="file"]').selectFile(
-          [testFile], 
-          { force: true }
-        );
-      });
+      cy.get('[data-testid="pdf-uploader"]').find('input[type="file"]').selectFile({
+        contents: Cypress.Buffer.from('test PDF content'),
+        fileName: 'a11y-test.pdf',
+        mimeType: 'application/pdf',
+        lastModified: Date.now(),
+      }, { force: true });
       
       // Verify that buttons are now visible and can receive focus
       cy.contains('button', 'Split PDFs').should('be.visible').focus();
@@ -196,9 +193,16 @@ describe('Accessibility Tests', () => {
     
     it('should provide sufficient time for interactions', () => {
       // Upload a PDF to test processing time
-      cy.get('@testPdf').then(testFile => {
+      cy.get('@testPdf').then((testFile) => {
+        const fileReference = {
+          contents: Cypress.Buffer.from('test PDF content'),
+          fileName: 'test.pdf',
+          mimeType: 'application/pdf',
+          lastModified: Date.now()
+        };
+        
         cy.get('[data-testid="pdf-uploader"]').find('input[type="file"]').selectFile(
-          [testFile], 
+          fileReference,
           { force: true }
         );
       });

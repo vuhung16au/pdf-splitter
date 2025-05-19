@@ -48,7 +48,7 @@ describe('Mobile Viewport Tests', () => {
       cy.get('button, a, input').each(($el, index, $list) => {
         if (index < $list.length - 1) {
           const nextEl = $list[index + 1];
-          const spacing = nextEl.offset().top - $el.offset().top;
+          const spacing = (nextEl.offset()?.top || 0) - ($el.offset()?.top || 0);
           
           // Elements should have at least 8px spacing
           expect(spacing).to.be.greaterThan(7);

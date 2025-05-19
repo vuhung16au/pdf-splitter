@@ -3,13 +3,19 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 // Define the shape of our context
+interface PendingOperation {
+  type: string;
+  data: unknown;
+  timestamp: Date;
+}
+
 interface NetworkContextType {
   isOnline: boolean;
   lastOnlineStatus: boolean;
   offlineAt: Date | null;
   onlineAt: Date | null;
-  pendingOperations: any[];
-  addPendingOperation: (operation: any) => void;
+  pendingOperations: PendingOperation[];
+  addPendingOperation: (operation: Omit<PendingOperation, 'timestamp'>) => void;
   clearPendingOperations: () => void;
 }
 
@@ -40,10 +46,10 @@ export const NetworkProvider: React.FC<NetworkProviderProps> = ({ children }) =>
   const [offlineAt, setOfflineAt] = useState<Date | null>(null);
   const [onlineAt, setOnlineAt] = useState<Date | null>(null);
   // Store operations attempted while offline
-  const [pendingOperations, setPendingOperations] = useState<any[]>([]);
+  const [pendingOperations, setPendingOperations] = useState<PendingOperation[]>([]);
 
   // Function to add pending operations that were attempted while offline
-  const addPendingOperation = (operation: any) => {
+  const addPendingOperation = (operation: Omit<PendingOperation, 'timestamp'>) => {
     setPendingOperations((prev) => [...prev, { ...operation, timestamp: new Date() }]);
   };
 

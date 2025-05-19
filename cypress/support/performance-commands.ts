@@ -69,7 +69,10 @@ Cypress.Commands.add('checkPagePerformance', () => {
         // Resource metrics
         resourceCount: win.performance.getEntriesByType('resource').length,
         resourceSize: win.performance.getEntriesByType('resource')
-          .reduce((total: number, res: PerformanceResourceTiming) => total + (res as any).encodedBodySize || 0, 0)
+          .reduce((total: number, res: PerformanceEntry) => {
+            const resource = res as PerformanceResourceTiming;
+            return total + (resource.encodedBodySize || 0);
+          }, 0)
       };
       
       // Get first paint if available (Chrome only)
@@ -99,18 +102,14 @@ Cypress.Commands.add('checkPagePerformance', () => {
  */
 Cypress.Commands.add('checkForConsoleErrors', () => {
   cy.window().then(win => {
-    const errorLogs = (win.console as any).error.getCalls ? 
-      (win.console as any).error.getCalls().map((call: any) => call.args.join(' ')) : 
-      [];
+    // Create a spy on console.error
+    const errorSpy = cy.spy(win.console, 'error');
     
-    if (errorLogs.length) {
-      cy.log(`⚠️ Found ${errorLogs.length} console errors:`);
-      errorLogs.forEach((error: string) => cy.log(`Console Error: ${error}`));
-    } else {
-      cy.log('✅ No console errors detected');
+    // Get error logs from the spy
+    const errorMessages = errorSpy.getCalls().map(call => call.args.join(' '));
+    
+    if (errorMessages.length > 0) {
+      throw new Error(`Console errors found: ${errorMessages.join('\n')}`);
     }
-    
-    // Fail test if errors are found (optional)
-    // expect(errorLogs.length).to.equal(0, 'No console errors should be present');
   });
 });

@@ -1,5 +1,21 @@
 "use client";
 
+interface StoredFile {
+  id?: number;
+  name: string;
+  type: string;
+  size: number;
+  content: ArrayBuffer;
+  timestamp: Date;
+}
+
+interface StoredOperation {
+  id?: number;
+  type: string;
+  data: unknown;
+  timestamp: Date;
+}
+
 // Simple wrapper for IndexedDB to store offline operations and files
 export default class OfflineStorage {
   private static readonly DB_NAME = 'pdf-splitter-offline-db';
@@ -81,7 +97,7 @@ export default class OfflineStorage {
   }
 
   // Get all stored files
-  static async getFiles(): Promise<any[]> {
+  static async getFiles(): Promise<StoredFile[]> {
     if (!this.db) await this.init();
     if (!this.db) return [];
 
@@ -99,7 +115,7 @@ export default class OfflineStorage {
   }
 
   // Add a pending operation
-  static async addOperation(operation: any): Promise<number> {
+  static async addOperation(operation: Omit<StoredOperation, 'id' | 'timestamp'>): Promise<number> {
     if (!this.db) await this.init();
     if (!this.db) throw new Error('Database not initialized');
 
@@ -107,7 +123,7 @@ export default class OfflineStorage {
       const transaction = this.db!.transaction([this.OPERATIONS_STORE], 'readwrite');
       const store = transaction.objectStore(this.OPERATIONS_STORE);
       
-      const operationData = {
+      const operationData: StoredOperation = {
         ...operation,
         timestamp: new Date()
       };
@@ -120,7 +136,7 @@ export default class OfflineStorage {
   }
 
   // Get all pending operations
-  static async getOperations(): Promise<any[]> {
+  static async getOperations(): Promise<StoredOperation[]> {
     if (!this.db) await this.init();
     if (!this.db) return [];
 

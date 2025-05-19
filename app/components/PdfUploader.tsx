@@ -10,12 +10,21 @@ import OfflineStorage from "../lib/offlineStorage";
 // Set maximum file size to 100MB
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 
+interface StoredFile {
+  id?: number;
+  name: string;
+  type: string;
+  size: number;
+  content: ArrayBuffer;
+  timestamp: Date;
+}
+
 export default function PdfUploader() {
   const [isLoading, setIsLoading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [processingStatus, setProcessingStatus] = useState<string>("");
-  const [storedFiles, setStoredFiles] = useState<any[]>([]);
+  const [storedFiles, setStoredFiles] = useState<StoredFile[]>([]);
   const { isOnline, addPendingOperation } = useNetwork();
 
   // Initialize offline storage and load any stored files when component mounts
@@ -104,13 +113,16 @@ export default function PdfUploader() {
         // If offline, store the operation for later and show offline message
         addPendingOperation({
           type: 'splitPdf',
-          files: uploadedFiles.map(file => file.name),
-          timestamp: new Date()
+          data: {
+            fileNames: uploadedFiles.map(file => file.name)
+          }
         });
         
         await OfflineStorage.addOperation({
           type: 'splitPdf',
-          fileNames: uploadedFiles.map(file => file.name)
+          data: {
+            fileNames: uploadedFiles.map(file => file.name)
+          }
         });
         
         setProcessingStatus("You're offline. Files saved and will be processed when you're back online.");

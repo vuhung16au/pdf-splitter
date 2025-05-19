@@ -9,7 +9,7 @@ declare global {
        * Throttle network conditions
        * @param condition - Network condition to simulate ('slow3G', 'fast3G', 'regular4G')
        */
-      throttle(condition: 'slow3G' | 'fast3G' | 'regular4G'): Chainable<void>
+      throttle(condition: 'slow3G' | 'fast3G' | 'regular4G'): void;
     }
   }
 }
@@ -36,13 +36,14 @@ const networkConditions = {
 Cypress.Commands.add('throttle', (condition: 'slow3G' | 'fast3G' | 'regular4G') => {
   const settings = networkConditions[condition];
   
-  // Use Cypress's built-in network throttling
   cy.window().then((win) => {
     // @ts-ignore - Chrome DevTools Protocol
     const client = win.Cypress.automation('client:chrome');
     
     if (client) {
+      // @ts-ignore - Chrome DevTools Protocol
       client.send('Network.enable');
+      // @ts-ignore - Chrome DevTools Protocol
       client.send('Network.emulateNetworkConditions', {
         offline: false,
         latency: settings.latency,
@@ -52,6 +53,5 @@ Cypress.Commands.add('throttle', (condition: 'slow3G' | 'fast3G' | 'regular4G') 
     }
   });
   
-  // Log the network condition
   cy.log(`🌐 Network throttled to: ${condition}`);
 }); 
