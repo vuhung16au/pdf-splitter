@@ -2,17 +2,19 @@
  * Custom commands for mobile testing
  */
 
+export {};
+
 declare global {
   namespace Cypress {
     interface Chainable {
-      touch(eventType: string, options?: { clientX?: number; clientY?: number }): Chainable<JQuery<HTMLElement>>;
-      swipe(direction: 'left' | 'right' | 'up' | 'down', distance?: number): Chainable<JQuery<HTMLElement>>;
-      longPress(duration?: number): Chainable<JQuery<HTMLElement>>;
-      pinch(scale?: number): Chainable<JQuery<HTMLElement>>;
-      doubleTap(): Chainable<JQuery<HTMLElement>>;
-      mobileFileUpload(file: File): Chainable<JQuery<HTMLElement>>;
-      hasTouchTargetSize(minSize?: number): Chainable<JQuery<HTMLElement>>;
-      hasProperSpacing(minSpacing?: number): Chainable<JQuery<HTMLElement>>;
+      touch(eventType: string, options?: { clientX?: number; clientY?: number }): Chainable;
+      swipe(direction: 'left' | 'right' | 'up' | 'down', distance?: number): Chainable;
+      longPress(duration?: number): Chainable;
+      pinch(scale?: number): Chainable;
+      doubleTap(): Chainable;
+      mobileFileUpload(file: File): Chainable;
+      hasTouchTargetSize(minSize?: number): Chainable;
+      hasProperSpacing(minSpacing?: number): Chainable;
     }
   }
 }
@@ -77,7 +79,7 @@ Cypress.Commands.add('mobileFileUpload', { prevSubject: 'element' }, (subject, f
 
 // Add custom command for checking touch target size
 Cypress.Commands.add('hasTouchTargetSize', { prevSubject: 'element' }, (subject, minSize = 44) => {
-  return cy.wrap(subject).then(($el: JQuery<HTMLElement>) => {
+  return cy.wrap(subject).then(($el) => {
     const height = $el.height();
     const width = $el.width();
     
@@ -90,10 +92,10 @@ Cypress.Commands.add('hasTouchTargetSize', { prevSubject: 'element' }, (subject,
 
 // Add custom command for checking element spacing
 Cypress.Commands.add('hasProperSpacing', { prevSubject: 'element' }, (subject, minSpacing = 8) => {
-  return cy.wrap(subject).then(($el: JQuery<HTMLElement>) => {
+  return cy.wrap(subject).then(($el) => {
     const nextEl = $el.next();
     if (nextEl.length) {
-      const spacing = nextEl.offset()?.top - ($el.offset()?.top || 0);
+      const spacing = nextEl.offset()?.top - ($el.offset()?.top ?? 0);
       expect(spacing).to.be.greaterThan(minSpacing - 1);
     }
     return cy.wrap($el);
