@@ -117,6 +117,8 @@ The application has a comprehensive test suite using Cypress for both component 
 
 - **Component Tests**: Test individual React components in isolation
 - **End-to-End Tests**: Test the full application from a user perspective
+- **Browser Compatibility Tests**: Verify application works in different browsers
+- **Responsive UI Tests**: Ensure the UI adapts properly to different screen sizes
 - **PDF Utilities Tests**: Unit tests for the PDF processing functions
 
 To run tests:

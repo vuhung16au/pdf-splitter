@@ -220,4 +220,46 @@ describe('Browser Compatibility Tests', () => {
       cy.contains('safari-test.pdf').should('be.visible');
     });
   });
+
+  /**
+   * Edge browser tests
+   * Note: These tests will only run if Cypress is configured with Edge
+   */
+  context('Edge browser', { browser: 'edge' }, () => {
+    testCoreFunctionality();
+    
+    it('should handle PDF display specifics in Edge', () => {
+      // Edge-specific PDF handling tests
+      cy.get('[data-testid="pdf-uploader"]').should('be.visible');
+      
+      // Upload a test PDF
+      const testFile = new File(['test PDF content'], 'edge-test.pdf', { type: 'application/pdf' });
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(testFile);
+      
+      cy.get('[data-testid="pdf-uploader"]').trigger('drop', {
+        dataTransfer: {
+          files: dataTransfer.files,
+          types: ['Files']
+        }
+      });
+      
+      // Verify file appears in the list
+      cy.contains('Selected Files (1)').should('be.visible');
+      cy.contains('edge-test.pdf').should('be.visible');
+    });
+    
+    it('should properly handle UI rendering in Edge', () => {
+      // Edge sometimes renders differently
+      // Check specific styling
+      cy.get('header').should('be.visible');
+      cy.get('[data-testid="pdf-uploader"]').should('have.css', 'border-style', 'solid');
+      
+      // Check responsive layout in Edge
+      cy.viewport(768, 1024); // Tablet size
+      cy.wait(200); // Give time for responsive adjustments
+      cy.get('header h1').should('be.visible');
+      cy.get('[data-testid="pdf-uploader"]').should('be.visible');
+    });
+  });
 });

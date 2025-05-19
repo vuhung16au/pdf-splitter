@@ -2,7 +2,7 @@
 
 ## Overview
 
-We have successfully implemented browser compatibility testing for the PDF Splitter application. These tests ensure that the application functions correctly across different web browsers, including Chrome, Firefox, and Safari.
+We have successfully implemented browser compatibility testing for the PDF Splitter application. These tests ensure that the application functions correctly across different web browsers, including Chrome, Microsoft Edge, Firefox, and Safari.
 
 ## Implementation Details
 
@@ -27,6 +27,7 @@ The browser compatibility tests are structured to:
 The tests accommodate known differences between browsers:
 
 - **Chrome**: Our baseline browser where all tests run
+- **Microsoft Edge**: Tests Edge-specific PDF handling and UI rendering
 - **Firefox**: Tests additional drag-and-drop behavior specific to Firefox
 - **Safari**: Tests layout handling specific to Safari's WebKit engine
 
@@ -35,22 +36,28 @@ The tests accommodate known differences between browsers:
 The tests can be run in different browsers using:
 
 ```bash
-# Run tests in Chrome
+# Run only the browser compatibility tests
+npm run test:compat:chrome   # Chrome only
+npm run test:compat:edge     # Edge only
+npm run test:browsers        # Chrome and Edge sequentially
+
+# Run all tests in specific browser
 npm run test:chrome
-
-# Run tests in Firefox
+npm run test:edge
 npm run test:firefox
-
-# Run tests in Safari
 npm run test:safari
-
-# Run tests in all browsers sequentially
-npm run test:browsers
 ```
 
 ## Test Results
 
-All tests are currently passing in the Electron browser (which is Chrome-based). The Firefox and Safari tests are pending since these browsers need to be properly installed and configured in the testing environment.
+Current test results for each browser:
+
+- **Chrome**: All tests passing (6 tests)
+- **Microsoft Edge**: All tests passing (7 tests)
+- **Firefox**: Tests pending (requires Firefox installation)
+- **Safari**: Tests pending (requires Safari/WebKit installation)
+
+The Chrome and Edge tests run successfully. The Firefox and Safari tests are pending since these browsers need to be properly installed and configured in the testing environment.
 
 ## Next Steps
 

@@ -7,7 +7,11 @@ export default defineConfig({
     supportFile: "cypress/support/e2e.ts",
     viewportWidth: 1280,
     viewportHeight: 720,
-    chromeWebSecurity: false
+    chromeWebSecurity: false,
+    setupNodeEvents(on, config) {
+      // Load the plugins
+      return require('./cypress/plugins/index.js')(on, config);
+    }
   },
   component: {
     devServer: {

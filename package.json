@@ -16,7 +16,10 @@
     "test:chrome": "./run-tests.sh e2e chrome",
     "test:firefox": "./run-tests.sh e2e firefox",
     "test:safari": "./run-tests.sh e2e safari",
-    "test:browsers": "npm run test:chrome && npm run test:firefox && npm run test:safari"
+    "test:edge": "./run-tests.sh e2e edge",
+    "test:compat:chrome": "npx cypress run --browser chrome --spec 'cypress/e2e/browser-compatibility.cy.ts'",
+    "test:compat:edge": "npx cypress run --browser edge --spec 'cypress/e2e/browser-compatibility.cy.ts'",
+    "test:browsers": "npm run test:compat:chrome && npm run test:compat:edge"
   },
   "dependencies": {
     "file-saver": "^2.0.5",
