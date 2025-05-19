@@ -30,7 +30,15 @@ export default function Home() {
       </main>
       
       <footer className="row-start-3 w-full text-center py-6 text-sm text-gray-500 dark:text-gray-400">
-        <p>© {new Date().getFullYear()} PDF Splitter. Built with Next.js and PDF-lib.</p>
+        <p>© {new Date().getFullYear()} Make in 707. PDF Splitter. Built with Next.js and PDF-lib.</p>
+        <a 
+          href="https://github.com/vuhung16au/pdf-splitter" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="inline-block mt-2 text-blue-500 hover:text-blue-700 transition-colors"
+        >
+          GitHub Repository
+        </a>
       </footer>
     </div>
   );

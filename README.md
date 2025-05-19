@@ -76,8 +76,10 @@ npm run dev
 - JSZip 3.10.1
 - File Saver 2.0.5
 
-## Deploy on Vercel
+## Deployment
 
-The easiest way to deploy your PDF Splitter app is to use the [Vercel Platform](https://vercel.com/new) from the creators of Next.js.
+The application has been deployed on Vercel and is available at: [https://pdf-splitter-eta.vercel.app/](https://pdf-splitter-eta.vercel.app/)
+
+If you want to deploy your own instance, the easiest way is to use the [Vercel Platform](https://vercel.com/new) from the creators of Next.js.
 
 Check out the [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
