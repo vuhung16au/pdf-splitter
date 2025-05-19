@@ -319,3 +319,12 @@ npm run cypress run --spec "cypress/e2e/responsive-ui.cy.ts"
 4. **SaveAs Testing Issues**
    - When testing file downloads, you may encounter issues with the saveAs stub
    - For reliable tests, focus on verifying UI state changes rather than the actual download
+
+# Screenshots 
+
+![Browser Compatibility](../images/browser-compatibility.png) ![Responsive UI](../images/responsive-ui.png) ![PDF Splitter on Vercel](../images/vercel-screenshot.png)
+
+![alt text](../images/PDF-Split-Failed.png)
+
+![alt text](../images/responsive-ui.png) ![alt text](../images/vercel-deployment-failed.png)
+
