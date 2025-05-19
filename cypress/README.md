@@ -339,19 +339,171 @@ describe('UI Responsiveness Tests', () => {
 });
 ```
 
-These tests ensure our application:
+### Mobile Testing
 
-- Displays correctly across a range of device sizes (desktop, tablet, mobile)
-- Maintains functionality on all screen sizes
-- Properly handles file uploads and displays on any device
-- Adapts properly during window resizing
-- Has readable text and properly sized UI elements at all breakpoints
+Our mobile testing suite ensures that the PDF Splitter application provides an optimal experience on mobile devices. The tests are organized into several categories:
 
-To run the responsive UI tests:
+#### Running Mobile Tests
 
 ```bash
-npm run cypress run --spec "cypress/e2e/responsive-ui.cy.ts"
+# Run all mobile tests
+./run-tests.sh mobile chrome localhost false false false false false true
+
+# Run mobile tests against production
+./run-tests.sh mobile chrome production false false false false false true
+
+# Run specific mobile test file
+npm run cypress run --spec "cypress/e2e/mobile/touch-events.cy.ts"
 ```
+
+#### Mobile Test Structure
+
+```bash
+cypress/e2e/mobile/
+├── touch-events.cy.ts     # Tests for touch interactions
+├── gestures.cy.ts         # Tests for mobile gestures
+├── viewport.cy.ts         # Tests for viewport behavior
+├── performance.cy.ts      # Tests for mobile performance
+└── file-handling.cy.ts    # Tests for mobile file operations
+```
+
+#### Mobile Test Categories
+
+1. **Touch Events**
+   - Basic touch interactions (tap, touchstart, touchend)
+   - Touch and drag events
+   - Long press events
+   ```typescript
+   // From cypress/e2e/mobile/touch-events.cy.ts
+   describe('Touch Events', () => {
+     it('should handle basic touch events', () => {
+       cy.viewport('iphone-x');
+       cy.get('[data-testid="pdf-uploader"]')
+         .trigger('touchstart', { touches: [{ clientX: 100, clientY: 100 }] })
+         .should('have.class', 'active');
+     });
+   });
+   ```
+
+2. **Mobile Gestures**
+   - Pinch-to-zoom functionality
+   - Swipe gestures
+   - Double tap interactions
+   ```typescript
+   // From cypress/e2e/mobile/gestures.cy.ts
+   describe('Mobile Gestures', () => {
+     it('should handle pinch-to-zoom gestures', () => {
+       cy.viewport('iphone-x');
+       cy.get('main')
+         .trigger('gesturestart', { scale: 1 })
+         .trigger('gesturechange', { scale: 2 })
+         .trigger('gestureend', { scale: 2 });
+     });
+   });
+   ```
+
+3. **Viewport Behavior**
+   - Adaptation to different mobile viewport sizes
+   - Orientation changes (portrait/landscape)
+   - Touch-friendly element sizes
+   - Proper spacing between elements
+   ```typescript
+   // From cypress/e2e/mobile/viewport.cy.ts
+   describe('Mobile Viewport Tests', () => {
+     it('should adapt to different mobile viewport sizes', () => {
+       const mobileDevices = [
+         { device: 'iphone-x', width: 375, height: 812 },
+         { device: 'iphone-6', width: 375, height: 667 },
+         { device: 'pixel-2', width: 411, height: 731 }
+       ];
+       // Test each device viewport
+     });
+   });
+   ```
+
+4. **Mobile Performance**
+   - Smooth scrolling performance
+   - Touch event response time
+   - Resource loading efficiency
+   - File operation performance
+   ```typescript
+   // From cypress/e2e/mobile/performance.cy.ts
+   describe('Mobile Performance Tests', () => {
+     it('should maintain smooth scrolling', () => {
+       cy.window().then((win) => {
+         const startTime = performance.now();
+         cy.get('body').scrollTo('bottom', { duration: 1000 });
+         // Verify scroll performance
+       });
+     });
+   });
+   ```
+
+5. **Mobile File Handling**
+   - Single file selection
+   - Multiple file selection
+   - File removal
+   - File size limits
+   ```typescript
+   // From cypress/e2e/mobile/file-handling.cy.ts
+   describe('Mobile File Handling', () => {
+     it('should handle single file selection', () => {
+       cy.get('[data-testid="pdf-uploader"]')
+         .find('input[type="file"]')
+         .selectFile({
+           contents: Cypress.Buffer.from('test PDF content'),
+           fileName: 'mobile-test.pdf',
+           mimeType: 'application/pdf'
+         }, { force: true });
+     });
+   });
+   ```
+
+#### Custom Mobile Commands
+
+We've implemented custom Cypress commands specifically for mobile testing:
+
+```typescript
+// From cypress/support/mobile-commands.ts
+Cypress.Commands.add('touch', { prevSubject: 'element' }, (subject, eventType, options) => {
+  // Custom touch event command
+});
+
+Cypress.Commands.add('swipe', { prevSubject: 'element' }, (subject, direction, distance) => {
+  // Custom swipe gesture command
+});
+
+Cypress.Commands.add('longPress', { prevSubject: 'element' }, (subject, duration) => {
+  // Custom long press command
+});
+```
+
+#### Mobile Testing Best Practices
+
+1. **Viewport Configuration**
+   - Always set appropriate viewport size before tests
+   - Test across multiple device sizes
+   - Consider both portrait and landscape orientations
+
+2. **Touch Interactions**
+   - Use touch events instead of mouse events
+   - Test both single and multi-touch interactions
+   - Verify touch feedback and visual states
+
+3. **Performance Considerations**
+   - Monitor scroll performance
+   - Check touch response times
+   - Verify resource loading efficiency
+
+4. **File Operations**
+   - Test file selection on mobile
+   - Verify file size limits
+   - Check error handling for invalid files
+
+5. **Accessibility on Mobile**
+   - Ensure touch targets are large enough (minimum 44x44px)
+   - Verify proper spacing between interactive elements
+   - Test with screen readers on mobile devices
 
 ## Accessibility Testing
 

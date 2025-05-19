@@ -35,6 +35,12 @@ RUN_OFFLINE=${7:-"false"}  # Default to not running offline functionality tests 
 # Check for security test flag
 RUN_SECURITY=${8:-"false"}  # Default to not running security tests separately
 
+# Check for mobile test flag
+RUN_MOBILE=${9:-"false"}  # Default to not running mobile tests separately
+
+# Check for network throttling test flag
+RUN_NETWORK_THROTTLE=${10:-"false"}  # Default to not running network throttling tests separately
+
 # Check if we're running in CI
 is_ci=false
 if [ -n "$CI" ] || [ -n "$GITHUB_ACTIONS" ]; then
@@ -113,6 +119,58 @@ if [[ "$TEST_TYPE" == "all" || "$TEST_TYPE" == "e2e" ]]; then
       npx start-server-and-test dev http://localhost:3000 "cypress run --browser $BROWSER"
     else
       npx start-server-and-test dev http://localhost:3000 "cypress run --browser $BROWSER"
+    fi
+  fi
+  
+  # Run mobile tests if requested or if running all tests
+  if [[ "$RUN_MOBILE" == "true" || "$TEST_TYPE" == "all" ]]; then
+    print_header "Running Mobile Tests"
+    
+    # Define mobile test files
+    mobile_tests=(
+      "cypress/e2e/mobile/touch-events.cy.ts"
+      "cypress/e2e/mobile/gestures.cy.ts"
+      "cypress/e2e/mobile/viewport.cy.ts"
+      "cypress/e2e/mobile/performance.cy.ts"
+      "cypress/e2e/mobile/file-handling.cy.ts"
+      "cypress/e2e/mobile/network/throttling.cy.ts"
+    )
+    
+    # If network throttling tests are specifically requested, only run those
+    if [[ "$RUN_NETWORK_THROTTLE" == "true" ]]; then
+      mobile_tests=("cypress/e2e/mobile/network/throttling.cy.ts")
+    fi
+    
+    mobile_status=0
+    
+    for test_file in "${mobile_tests[@]}"; do
+      echo -e "Running mobile test: ${GREEN}$test_file${NC}"
+      
+      if [[ "$TARGET" == "production" ]]; then
+        # Run against production without starting the server
+        npx cypress run --config baseUrl=https://pdf-splitter-eta.vercel.app/ --browser $BROWSER --spec "$test_file"
+      else
+        # Run against localhost
+        if $is_ci; then
+          npx start-server-and-test dev http://localhost:3000 "cypress run --browser $BROWSER --spec $test_file"
+        else
+          npx start-server-and-test dev http://localhost:3000 "cypress run --browser $BROWSER --spec $test_file"
+        fi
+      fi
+      
+      test_status=$?
+      
+      if [ $test_status -eq 0 ]; then
+        echo -e "${GREEN}✓ Mobile test passed: $test_file${NC}"
+      else
+        echo -e "${RED}✗ Mobile test failed: $test_file${NC}"
+        mobile_status=1
+      fi
+    done
+    
+    # Include mobile status in e2e status
+    if [ $mobile_status -ne 0 ]; then
+      e2e_status=1
     fi
   fi
   
@@ -330,6 +388,15 @@ if [[ "$TEST_TYPE" == "all" || "$TEST_TYPE" == "e2e" ]]; then
       echo -e "${RED}✗ Performance tests failed${NC}"
     fi
   fi
+
+  # Report mobile test status if they were run
+  if [[ "$RUN_MOBILE" == "true" || "$TEST_TYPE" == "all" ]]; then
+    if [ ${mobile_status:-0} -eq 0 ]; then
+      echo -e "${GREEN}✓ Mobile tests passed${NC}"
+    else
+      echo -e "${RED}✗ Mobile tests failed${NC}"
+    fi
+  fi
 fi
 
 # Report accessibility test status if they were run
@@ -359,10 +426,19 @@ if [[ "$TEST_TYPE" == "all" || "$TEST_TYPE" == "security" || "$RUN_SECURITY" == 
   fi
 fi
 
+# Report network throttling test status if they were run
+if [[ "$RUN_NETWORK_THROTTLE" == "true" ]]; then
+  if [ ${mobile_status:-0} -eq 0 ]; then
+    echo -e "${GREEN}✓ Network throttling tests passed${NC}"
+  else
+    echo -e "${RED}✗ Network throttling tests failed${NC}"
+  fi
+fi
+
 # Return overall status based on which tests were run
 if [[ "$TEST_TYPE" == "all" ]]; then
   # All tests need to pass
-  if [ ${component_status:-0} -eq 0 ] && [ ${e2e_status:-0} -eq 0 ] && [ ${a11y_status:-0} -eq 0 ] && [ ${offline_status:-0} -eq 0 ]; then
+  if [ ${component_status:-0} -eq 0 ] && [ ${e2e_status:-0} -eq 0 ] && [ ${a11y_status:-0} -eq 0 ] && [ ${offline_status:-0} -eq 0 ] && [ ${mobile_status:-0} -eq 0 ]; then
     exit 0
   else
     exit 1
@@ -379,6 +455,12 @@ elif [[ "$TEST_TYPE" == "a11y" ]]; then
 elif [[ "$TEST_TYPE" == "offline" ]]; then
   # Only offline functionality tests need to pass
   exit ${offline_status:-0}
+elif [[ "$TEST_TYPE" == "mobile" ]]; then
+  # Only mobile tests need to pass
+  exit ${mobile_status:-0}
+elif [[ "$TEST_TYPE" == "network" ]]; then
+  # Only network throttling tests need to pass
+  exit ${mobile_status:-0}
 else
   # Unknown test type
   echo -e "${RED}Unknown test type: $TEST_TYPE${NC}"
