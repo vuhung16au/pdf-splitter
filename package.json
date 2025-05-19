@@ -12,7 +12,11 @@
     "test": "./run-tests.sh",
     "test:all": "./run-tests.sh all",
     "test:e2e": "./run-tests.sh e2e",
-    "test:component": "./run-tests.sh component"
+    "test:component": "./run-tests.sh component",
+    "test:chrome": "./run-tests.sh e2e chrome",
+    "test:firefox": "./run-tests.sh e2e firefox",
+    "test:safari": "./run-tests.sh e2e safari",
+    "test:browsers": "npm run test:chrome && npm run test:firefox && npm run test:safari"
   },
   "dependencies": {
     "file-saver": "^2.0.5",

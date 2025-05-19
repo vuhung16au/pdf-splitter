@@ -1,12 +1,20 @@
 # Testing Guide for PDF Splitter
 
-This project uses [Cypress](https://www.cypress.io/) for both component and end-to-end testing.
+This project uses [Cypress](https://www.cypress.io/) for both component and end-to-end testing, including cross-browser compatibility testing.
 
 ## Quick Start
 
 ```bash
 # Run only E2E tests (recommended for CI/CD)
 npm run test:e2e
+
+# Run browser-specific tests
+npm run test:chrome
+npm run test:firefox
+npm run test:safari
+
+# Run tests in all browsers
+npm run test:browsers
 
 # Run all tests
 npm test

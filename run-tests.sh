@@ -14,6 +14,9 @@ print_header() {
 # Check for test type argument
 TEST_TYPE=${1:-"all"}  # Default to "all" if no argument provided
 
+# Check for browser argument
+BROWSER=${2:-"chrome"}  # Default to "chrome" if no browser specified
+
 # Check if we're running in CI
 is_ci=false
 if [ -n "$CI" ] || [ -n "$GITHUB_ACTIONS" ]; then
@@ -43,9 +46,9 @@ fi
 if [[ "$TEST_TYPE" == "all" || "$TEST_TYPE" == "e2e" ]]; then
   print_header "Running E2E Tests"
   if $is_ci; then
-    npx start-server-and-test dev http://localhost:3000 "cypress run"
+    npx start-server-and-test dev http://localhost:3000 "cypress run --browser $BROWSER"
   else
-    npx start-server-and-test dev http://localhost:3000 "cypress run"
+    npx start-server-and-test dev http://localhost:3000 "cypress run --browser $BROWSER"
   fi
 
 e2e_status=$?
@@ -66,8 +69,10 @@ fi
 if [[ "$TEST_TYPE" == "all" || "$TEST_TYPE" == "e2e" ]]; then
   if [ $e2e_status -eq 0 ]; then
     echo -e "${GREEN}✓ E2E tests passed${NC}"
+    echo -e "${GREEN}✓ Browser: $BROWSER${NC}"
   else
     echo -e "${RED}✗ E2E tests failed${NC}"
+    echo -e "${RED}✗ Browser: $BROWSER${NC}"
   fi
 fi
 
