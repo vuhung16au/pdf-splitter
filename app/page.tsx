@@ -1,5 +1,19 @@
 import Image from "next/image";
 import PdfUploader from "./components/PdfUploader";
+import { Suspense } from "react";
+
+// Error fallback component for the Suspense boundary
+const PdfUploaderFallback = () => (
+  <div className="w-full flex items-center justify-center p-8 border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-700">
+    <div className="flex flex-col items-center justify-center space-y-4">
+      <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-md"></div>
+      <div className="space-y-2">
+        <div className="h-4 w-40 bg-gray-200 dark:bg-gray-700 animate-pulse rounded"></div>
+        <div className="h-3 w-32 bg-gray-200 dark:bg-gray-700 animate-pulse rounded"></div>
+      </div>
+    </div>
+  </div>
+);
 
 export default function Home() {
   return (
@@ -12,7 +26,9 @@ export default function Home() {
       </header>
       
       <main className="flex flex-col gap-8 row-start-2 items-center w-full">
-        <PdfUploader />
+        <Suspense fallback={<PdfUploaderFallback />}>
+          <PdfUploader />
+        </Suspense>
         
         <div className="max-w-2xl text-sm text-gray-600 dark:text-gray-400 mt-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
           <h3 className="font-medium mb-2 text-center">How it works</h3>

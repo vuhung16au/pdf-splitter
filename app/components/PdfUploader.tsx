@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { splitPdfToSinglePages, saveSplitPdfAsZip } from "../lib/pdfUtils";
 import DragDropArea from "./DragDropArea";
+import ErrorBoundary from "./ErrorBoundary";
 
 // Set maximum file size to 100MB
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
@@ -38,18 +39,29 @@ export default function PdfUploader() {
 
     try {
       setIsLoading(true);
+      setError(null);
       setProcessingStatus("Reading PDF files...");
 
-      // Calculate total pages for progress indication
+      // Validate PDF files
+      for (const file of uploadedFiles) {
+        if (file.type !== 'application/pdf') {
+          throw new Error(`File "${file.name}" is not a valid PDF`);
+        }
+      }
+
+      // Split the PDFs into pages
       setProcessingStatus("Splitting pages...");
+      const zipBlob = await splitPdfToSinglePages(uploadedFiles).catch(err => {
+        console.error("Error while splitting PDFs:", err);
+        throw new Error(`Failed to split PDF: ${err.message || 'Unknown error'}`);
+      });
 
-      // Process the PDF files
-      const zipBlob = await splitPdfToSinglePages(uploadedFiles);
-
+      // Create and save the ZIP file
       setProcessingStatus("Creating ZIP archive...");
-
-      // Save the zip file
-      await saveSplitPdfAsZip(zipBlob);
+      await saveSplitPdfAsZip(zipBlob).catch(err => {
+        console.error("Error while creating ZIP:", err);
+        throw new Error(`Failed to create ZIP file: ${err.message || 'Unknown error'}`);
+      });
 
       setProcessingStatus("Done! Your download should start automatically.");
 
@@ -59,7 +71,7 @@ export default function PdfUploader() {
       }, 3000);
     } catch (err) {
       console.error("Error processing PDFs:", err);
-      setError("Error processing PDF files. Please try again.");
+      setError(`${err instanceof Error ? err.message : "Error processing PDF files. Please try again."}`);
     } finally {
       setIsLoading(false);
     }
@@ -72,59 +84,74 @@ export default function PdfUploader() {
   };
 
   return (
-    <div className="flex flex-col items-center w-full max-w-2xl mx-auto space-y-6">
-      <DragDropArea onFilesDrop={handleFilesDrop} isLoading={isLoading} />
-
-      {error && (
-        <div className="w-full max-w-xl text-center p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-lg">
-          {error}
+    <ErrorBoundary
+      fallback={
+        <div className="p-4 border border-red-300 bg-red-50 dark:bg-red-900/20 rounded-md text-red-700 dark:text-red-400 max-w-xl w-full">
+          <h3 className="font-medium mb-2">PDF Processing Error</h3>
+          <p className="text-sm mb-4">There was an error processing your PDF files. This could be due to a corrupted PDF or insufficient memory.</p>
+          <button 
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            onClick={() => window.location.reload()}
+          >
+            Reload Application
+          </button>
         </div>
-      )}
+      }
+    >
+      <div className="flex flex-col items-center w-full max-w-2xl mx-auto space-y-6">
+        <DragDropArea onFilesDrop={handleFilesDrop} isLoading={isLoading} />
 
-      {uploadedFiles.length > 0 && (
-        <div className="w-full max-w-xl bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-          <h3 className="text-lg font-medium mb-2">
-            Selected Files ({uploadedFiles.length})
-          </h3>
-          <ul className="max-h-40 overflow-y-auto">
-            {uploadedFiles.map((file, index) => (
-              <li
-                key={index}
-                className="text-sm py-1 flex justify-between items-center"
-              >
-                <span className="truncate max-w-[300px] pr-4">{file.name}</span>
-                <span className="text-xs text-gray-500">
-                  {(file.size / 1024).toFixed(1)} KB
-                </span>
-              </li>
-            ))}
-          </ul>
-
-          <div className="flex mt-4 space-x-3">
-            <button
-              onClick={handleProcessFiles}
-              disabled={isLoading}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition-colors disabled:bg-blue-400"
-            >
-              {isLoading ? "Processing..." : "Split PDFs"}
-            </button>
-
-            <button
-              onClick={clearFiles}
-              disabled={isLoading}
-              className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 py-2 px-4 rounded-md transition-colors disabled:opacity-50"
-            >
-              Clear
-            </button>
+        {error && (
+          <div className="w-full max-w-xl text-center p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-lg">
+            {error}
           </div>
-        </div>
-      )}
+        )}
 
-      {processingStatus && (
-        <div className="w-full max-w-xl text-center p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-lg">
-          {processingStatus}
-        </div>
-      )}
-    </div>
+        {uploadedFiles.length > 0 && (
+          <div className="w-full max-w-xl bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+            <h3 className="text-lg font-medium mb-2">
+              Selected Files ({uploadedFiles.length})
+            </h3>
+            <ul className="max-h-40 overflow-y-auto">
+              {uploadedFiles.map((file, index) => (
+                <li
+                  key={index}
+                  className="text-sm py-1 flex justify-between items-center"
+                >
+                  <span className="truncate max-w-[300px] pr-4">{file.name}</span>
+                  <span className="text-xs text-gray-500">
+                    {(file.size / 1024).toFixed(1)} KB
+                  </span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="flex mt-4 space-x-3">
+              <button
+                onClick={handleProcessFiles}
+                disabled={isLoading}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition-colors disabled:bg-blue-400"
+              >
+                {isLoading ? "Processing..." : "Split PDFs"}
+              </button>
+
+              <button
+                onClick={clearFiles}
+                disabled={isLoading}
+                className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 py-2 px-4 rounded-md transition-colors disabled:opacity-50"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+        )}
+
+        {processingStatus && (
+          <div className="w-full max-w-xl text-center p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-lg">
+            {processingStatus}
+          </div>
+        )}
+      </div>
+    </ErrorBoundary>
   );
 }

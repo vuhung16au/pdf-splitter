@@ -12,6 +12,10 @@ A web application that splits multi-paged PDF files into single-paged PDF files 
 - Modern UI with Tailwind CSS
 - Responsive design for both desktop and mobile
 - Dark mode support
+- **Robust error handling** with graceful degradation
+- **Custom error boundaries** to prevent application crashes
+- **Detailed error messages** for user guidance
+- **Fallback UI** for various error scenarios
 
 ## File Structure
 
@@ -19,6 +23,9 @@ A web application that splits multi-paged PDF files into single-paged PDF files 
 - `PdfUploader.tsx` - Component for handling file uploads and processing
 - `DragDropArea.tsx` - Component for drag and drop functionality
 - `pdfUtils.ts` - Utility functions for PDF splitting using pdf-lib
+- `ErrorBoundary.tsx` - Custom component for catching and handling UI errors
+- `error.tsx` - Global error handler for Next.js application
+- `not-found.tsx` - Custom 404 page for handling non-existent routes
 
 ## Libraries Used
 
@@ -76,6 +83,18 @@ npm run dev
 - pdf-lib 1.17.1
 - JSZip 3.10.1
 - File Saver 2.0.5
+
+## Error Handling
+
+The application implements comprehensive error handling to ensure a smooth user experience:
+
+- **React Error Boundaries**: Catch errors in the component tree and prevent the entire app from crashing
+- **Graceful PDF Processing**: Handles corrupted or invalid PDFs with detailed error messages
+- **File Validation**: Checks file types, sizes, and content before processing
+- **Visual Feedback**: Provides clear error states in the UI for immediate user feedback
+- **API Error Handling**: Proper error responses for API routes with appropriate HTTP status codes
+- **Global Error Handling**: App-wide error handling for uncaught exceptions
+- **Custom 404 Page**: User-friendly page for non-existent routes
 
 ## Deployment
 
