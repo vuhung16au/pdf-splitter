@@ -38,6 +38,7 @@ File structure / filenames: Help me decide it.
 # Cypress 
 
 ## Setting up Cypress in your Next.js project
+
 ## Createing a basic test
 
 - Upload a single PDF file
@@ -46,6 +47,7 @@ File structure / filenames: Help me decide it.
 
 ## Running Cypress tests
 
+e2e tests:
 - Upload multiple PDF files
 - Split the PDFs into single pages
 - Download the ZIP file
@@ -53,22 +55,24 @@ File structure / filenames: Help me decide it.
 - Testing error handling
 - Upload an invalid PDF file
 - Check for error messages
-- Upload a large PDF file
-- Check for error messages
 
-- Testing UI responsiveness
-- Resize the browser window
-- Check if the UI elements are responsive
 - Testing drag-and-drop functionality
 - Drag and drop a PDF file
 - Check if the file is uploaded successfully
 
+- Testing UI responsiveness
+- Resize the browser window
+- Check if the UI elements are responsive
+
 ## Testing file size validation
-- Upload a PDF file larger than 100MB
+
+- Upload a PDF file larger than 100MB (please help me create a mock file)
 - Check for error messages
 - Upload a PDF file smaller than 100MB
 - Check if the file is uploaded successfully
 
+## Test cross-browser compatibility
 
-## Adding more tests
+- Test the application in different browsers (Chrome, Firefox, Safari)
+
 ## Running tests in CI/CD

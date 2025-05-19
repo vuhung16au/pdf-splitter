@@ -131,10 +131,13 @@ npm run test:component
 # Run only E2E tests (recommended)
 npm run test:e2e
 
+# Run UI responsiveness tests
+npm run cypress run --spec "cypress/e2e/responsive-ui.cy.ts"
+
 # Open Cypress UI for interactive testing
 npm run cypress
 ```
 
-**Note:** For continuous integration or deployment workflows, we recommend using the E2E tests (`npm run test:e2e`), which are more stable and better represent real user experiences.
+**Note:** For continuous integration or deployment workflows, we recommend using the E2E tests (`npm run test:e2e`), which are more stable and better represent real user experiences. The responsive UI tests ensure that the application works well across different device sizes.
 
-See [tests/README.md](tests/README.md) for detailed testing documentation.
+See [cypress/README.md](cypress/README.md) for detailed testing documentation.
