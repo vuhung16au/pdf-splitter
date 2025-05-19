@@ -25,7 +25,12 @@
     "test:a11y:chrome": "start-server-and-test dev http://localhost:3000 'cypress run --browser chrome --spec cypress/e2e/accessibility.cy.ts'",
     "test:a11y:firefox": "start-server-and-test dev http://localhost:3000 'cypress run --browser firefox --spec cypress/e2e/accessibility.cy.ts'",
     "test:a11y:edge": "start-server-and-test dev http://localhost:3000 'cypress run --browser edge --spec cypress/e2e/accessibility.cy.ts'",
-    "test:a11y:all": "./run-a11y-cross-browser.sh"
+    "test:a11y:all": "./run-a11y-cross-browser.sh",
+    "test:security": "cypress run --spec 'cypress/e2e/security/**/*.cy.ts'",
+    "test:security:open": "cypress open --spec 'cypress/e2e/security/**/*.cy.ts'",
+    "test:security:chrome": "cypress run --browser chrome --spec 'cypress/e2e/security/**/*.cy.ts'",
+    "test:security:firefox": "cypress run --browser firefox --spec 'cypress/e2e/security/**/*.cy.ts'",
+    "test:security:edge": "cypress run --browser edge --spec 'cypress/e2e/security/**/*.cy.ts'"
   },
   "dependencies": {
     "file-saver": "^2.0.5",
@@ -48,6 +53,7 @@
     "axe-core": "^4.10.3",
     "cypress": "^14.3.3",
     "cypress-axe": "^1.6.0",
+    "cypress-file-upload": "^5.0.8",
     "start-server-and-test": "^2.0.12",
     "tailwindcss": "^4",
     "typescript": "^5"

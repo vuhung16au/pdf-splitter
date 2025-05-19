@@ -32,6 +32,9 @@ RUN_A11Y=${6:-"false"}  # Default to not running accessibility tests separately
 # Check for offline functionality test flag
 RUN_OFFLINE=${7:-"false"}  # Default to not running offline functionality tests separately
 
+# Check for security test flag
+RUN_SECURITY=${8:-"false"}  # Default to not running security tests separately
+
 # Check if we're running in CI
 is_ci=false
 if [ -n "$CI" ] || [ -n "$GITHUB_ACTIONS" ]; then
@@ -206,6 +209,98 @@ if [[ "$TEST_TYPE" == "all" || "$TEST_TYPE" == "a11y" || "$RUN_A11Y" == "true" ]
   done
 fi
 
+# Run Security Tests if requested
+if [[ "$TEST_TYPE" == "all" || "$TEST_TYPE" == "security" || "$RUN_SECURITY" == "true" ]]; then
+  print_header "Running Security Tests"
+  
+  security_status=0
+  
+  # Run dependency vulnerability scan
+  echo "Running dependency vulnerability scan..."
+  npm audit --audit-level=high
+  if [ $? -ne 0 ]; then
+    echo -e "${RED}✗ High severity vulnerabilities found in dependencies${NC}"
+    security_status=1
+  else
+    echo -e "${GREEN}✓ No high severity vulnerabilities found in dependencies${NC}"
+  fi
+  
+  # Run CSP verification tests
+  echo "Running Content Security Policy tests..."
+  if [[ "$TARGET" == "production" ]]; then
+    # Run against production without starting the server
+    echo -e "Running CSP tests against ${GREEN}production${NC}"
+    npx cypress run --config baseUrl=https://pdf-splitter-eta.vercel.app/ --browser $BROWSER --spec cypress/e2e/security/csp.cy.ts
+  else
+    # Run against localhost
+    if $is_ci; then
+      npx start-server-and-test dev http://localhost:3000 "cypress run --browser $BROWSER --spec cypress/e2e/security/csp.cy.ts"
+    else
+      npx start-server-and-test dev http://localhost:3000 "cypress run --browser $BROWSER --spec cypress/e2e/security/csp.cy.ts"
+    fi
+  fi
+  
+  csp_status=$?
+  if [ $csp_status -ne 0 ]; then
+    echo -e "${RED}✗ CSP tests failed${NC}"
+    security_status=1
+  else
+    echo -e "${GREEN}✓ CSP tests passed${NC}"
+  fi
+  
+  # Run XSS protection tests
+  echo "Running XSS protection tests..."
+  if [[ "$TARGET" == "production" ]]; then
+    # Run against production without starting the server
+    echo -e "Running XSS tests against ${GREEN}production${NC}"
+    npx cypress run --config baseUrl=https://pdf-splitter-eta.vercel.app/ --browser $BROWSER --spec cypress/e2e/security/xss.cy.ts
+  else
+    # Run against localhost
+    if $is_ci; then
+      npx start-server-and-test dev http://localhost:3000 "cypress run --browser $BROWSER --spec cypress/e2e/security/xss.cy.ts"
+    else
+      npx start-server-and-test dev http://localhost:3000 "cypress run --browser $BROWSER --spec cypress/e2e/security/xss.cy.ts"
+    fi
+  fi
+  
+  xss_status=$?
+  if [ $xss_status -ne 0 ]; then
+    echo -e "${RED}✗ XSS protection tests failed${NC}"
+    security_status=1
+  else
+    echo -e "${GREEN}✓ XSS protection tests passed${NC}"
+  fi
+  
+  # Run file upload security tests
+  echo "Running file upload security tests..."
+  if [[ "$TARGET" == "production" ]]; then
+    # Run against production without starting the server
+    echo -e "Running file security tests against ${GREEN}production${NC}"
+    npx cypress run --config baseUrl=https://pdf-splitter-eta.vercel.app/ --browser $BROWSER --spec cypress/e2e/security/file-upload.cy.ts
+  else
+    # Run against localhost
+    if $is_ci; then
+      npx start-server-and-test dev http://localhost:3000 "cypress run --browser $BROWSER --spec cypress/e2e/security/file-upload.cy.ts"
+    else
+      npx start-server-and-test dev http://localhost:3000 "cypress run --browser $BROWSER --spec cypress/e2e/security/file-upload.cy.ts"
+    fi
+  fi
+  
+  file_security_status=$?
+  if [ $file_security_status -ne 0 ]; then
+    echo -e "${RED}✗ File upload security tests failed${NC}"
+    security_status=1
+  else
+    echo -e "${GREEN}✓ File upload security tests passed${NC}"
+  fi
+  
+  if [ $security_status -eq 0 ]; then
+    echo -e "${GREEN}✓ All security tests passed${NC}"
+  else
+    echo -e "${RED}✗ Some security tests failed${NC}"
+  fi
+fi
+
 # Print summary
 print_header "Test Summary"
 
@@ -252,6 +347,15 @@ if [[ "$TEST_TYPE" == "all" || "$TEST_TYPE" == "offline" || "$RUN_OFFLINE" == "t
     echo -e "${GREEN}✓ Offline functionality tests passed${NC}"
   else
     echo -e "${RED}✗ Offline functionality tests failed${NC}"
+  fi
+fi
+
+# Report security test status if they were run
+if [[ "$TEST_TYPE" == "all" || "$TEST_TYPE" == "security" || "$RUN_SECURITY" == "true" ]]; then
+  if [ ${security_status:-0} -eq 0 ]; then
+    echo -e "${GREEN}✓ Security tests passed${NC}"
+  else
+    echo -e "${RED}✗ Some security tests failed${NC}"
   fi
 fi
 
