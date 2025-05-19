@@ -8,6 +8,7 @@ A web application that splits multi-paged PDF files into single-paged PDF files 
 - Split multi-page PDFs into single-page PDF files
 - Package the split files into a ZIP archive
 - Download the ZIP file automatically
+- File size validation (max 100MB per file)
 - Modern UI with Tailwind CSS
 - Responsive design for both desktop and mobile
 - Dark mode support
@@ -29,7 +30,7 @@ A web application that splits multi-paged PDF files into single-paged PDF files 
 
 ## Usage
 
-1. Upload one or more PDF files by dragging them into the upload area or clicking to browse
+1. Upload one or more PDF files by dragging them into the upload area or clicking to browse (max file size: 100MB per file)
 2. Click "Split PDFs" to process your files
 3. Each page of your PDFs will be extracted as a separate PDF file with the naming format "originalname-XX.pdf"
 4. The ZIP file "pdf-splitted.zip" containing all individual PDFs will be downloaded automatically
@@ -83,3 +84,10 @@ The application has been deployed on Vercel and is available at: [https://pdf-sp
 If you want to deploy your own instance, the easiest way is to use the [Vercel Platform](https://vercel.com/new) from the creators of Next.js.
 
 Check out the [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Security
+
+- All PDF processing happens client-side in the browser
+- No data is sent to any server
+- Files are never stored on the server
+- File size limit (100MB) prevents browser performance issues

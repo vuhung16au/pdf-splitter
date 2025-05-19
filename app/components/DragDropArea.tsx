@@ -3,6 +3,9 @@
 import { useState, useRef } from "react";
 import Image from "next/image";
 
+// Set maximum file size to 100MB - same as defined in PdfUploader
+const MAX_FILE_SIZE = 100 * 1024 * 1024;
+
 interface DragDropAreaProps {
   onFilesDrop: (files: File[]) => void;
   isLoading: boolean;
@@ -41,8 +44,11 @@ export default function DragDropArea({ onFilesDrop, isLoading }: DragDropAreaPro
       (file) => file.type === "application/pdf"
     );
     
-    if (files.length > 0) {
-      onFilesDrop(files);
+    // Only proceed with files that are valid PDFs and within size limit
+    const validFiles = files.filter(file => file.size <= MAX_FILE_SIZE);
+    
+    if (validFiles.length > 0) {
+      onFilesDrop(validFiles);
     }
   };
 
@@ -53,8 +59,11 @@ export default function DragDropArea({ onFilesDrop, isLoading }: DragDropAreaPro
       (file) => file.type === "application/pdf"
     );
     
-    if (files.length > 0) {
-      onFilesDrop(files);
+    // Only proceed with files that are valid PDFs and within size limit
+    const validFiles = files.filter(file => file.size <= MAX_FILE_SIZE);
+    
+    if (validFiles.length > 0) {
+      onFilesDrop(validFiles);
     }
   };
 

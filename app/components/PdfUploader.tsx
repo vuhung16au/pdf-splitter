@@ -4,6 +4,9 @@ import { useState } from "react";
 import { splitPdfToSinglePages, saveSplitPdfAsZip } from "../lib/pdfUtils";
 import DragDropArea from "./DragDropArea";
 
+// Set maximum file size to 100MB
+const MAX_FILE_SIZE = 100 * 1024 * 1024;
+
 export default function PdfUploader() {
   const [isLoading, setIsLoading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
@@ -11,6 +14,18 @@ export default function PdfUploader() {
   const [processingStatus, setProcessingStatus] = useState<string>("");
 
   const handleFilesDrop = (files: File[]) => {
+    // Check for file size limits
+    const oversizedFiles = files.filter((file) => file.size > MAX_FILE_SIZE);
+
+    if (oversizedFiles.length > 0) {
+      const fileNames = oversizedFiles.map((file) => file.name).join(", ");
+      setError(`File size exceeds the limit (100MB): ${fileNames}`);
+      // Filter out oversized files
+      const validFiles = files.filter((file) => file.size <= MAX_FILE_SIZE);
+      setUploadedFiles(validFiles);
+      return;
+    }
+
     setUploadedFiles(files);
     setError(null);
   };
@@ -24,20 +39,20 @@ export default function PdfUploader() {
     try {
       setIsLoading(true);
       setProcessingStatus("Reading PDF files...");
-      
+
       // Calculate total pages for progress indication
       setProcessingStatus("Splitting pages...");
-      
+
       // Process the PDF files
       const zipBlob = await splitPdfToSinglePages(uploadedFiles);
-      
+
       setProcessingStatus("Creating ZIP archive...");
-      
+
       // Save the zip file
       await saveSplitPdfAsZip(zipBlob);
-      
+
       setProcessingStatus("Done! Your download should start automatically.");
-      
+
       // Reset after successful processing
       setTimeout(() => {
         setProcessingStatus("");
@@ -59,7 +74,13 @@ export default function PdfUploader() {
   return (
     <div className="flex flex-col items-center w-full max-w-2xl mx-auto space-y-6">
       <DragDropArea onFilesDrop={handleFilesDrop} isLoading={isLoading} />
-      
+
+      {error && (
+        <div className="w-full max-w-xl text-center p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-lg">
+          {error}
+        </div>
+      )}
+
       {uploadedFiles.length > 0 && (
         <div className="w-full max-w-xl bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <h3 className="text-lg font-medium mb-2">
@@ -67,7 +88,10 @@ export default function PdfUploader() {
           </h3>
           <ul className="max-h-40 overflow-y-auto">
             {uploadedFiles.map((file, index) => (
-              <li key={index} className="text-sm py-1 flex justify-between items-center">
+              <li
+                key={index}
+                className="text-sm py-1 flex justify-between items-center"
+              >
                 <span className="truncate max-w-[300px] pr-4">{file.name}</span>
                 <span className="text-xs text-gray-500">
                   {(file.size / 1024).toFixed(1)} KB
@@ -75,7 +99,7 @@ export default function PdfUploader() {
               </li>
             ))}
           </ul>
-          
+
           <div className="flex mt-4 space-x-3">
             <button
               onClick={handleProcessFiles}
@@ -84,7 +108,7 @@ export default function PdfUploader() {
             >
               {isLoading ? "Processing..." : "Split PDFs"}
             </button>
-            
+
             <button
               onClick={clearFiles}
               disabled={isLoading}
@@ -95,16 +119,10 @@ export default function PdfUploader() {
           </div>
         </div>
       )}
-      
+
       {processingStatus && (
         <div className="w-full max-w-xl text-center p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-lg">
           {processingStatus}
-        </div>
-      )}
-      
-      {error && (
-        <div className="w-full max-w-xl text-center p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-lg">
-          {error}
         </div>
       )}
     </div>

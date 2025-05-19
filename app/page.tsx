@@ -17,7 +17,7 @@ export default function Home() {
         <div className="max-w-2xl text-sm text-gray-600 dark:text-gray-400 mt-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
           <h3 className="font-medium mb-2 text-center">How it works</h3>
           <ol className="list-decimal pl-5 space-y-1">
-            <li>Upload one or more PDF files by dragging them into the upload area or clicking to browse</li>
+            <li>Upload one or more PDF files by dragging them into the upload area or clicking to browse (100MB max per file)</li>
             <li>Click &quot;Split PDFs&quot; to process your files</li>
             <li>Each page of your PDFs will be extracted as a separate PDF file</li>
             <li>Download the ZIP file containing all the individual pages</li>
