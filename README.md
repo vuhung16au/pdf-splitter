@@ -110,3 +110,31 @@ Check out the [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 - No data is sent to any server
 - Files are never stored on the server
 - File size limit (100MB) prevents browser performance issues
+
+## Testing
+
+The application has a comprehensive test suite using Cypress for both component and end-to-end tests:
+
+- **Component Tests**: Test individual React components in isolation
+- **End-to-End Tests**: Test the full application from a user perspective
+- **PDF Utilities Tests**: Unit tests for the PDF processing functions
+
+To run tests:
+
+```bash
+# Run all tests
+npm test
+
+# Run only component tests
+npm run test:component
+
+# Run only E2E tests (recommended)
+npm run test:e2e
+
+# Open Cypress UI for interactive testing
+npm run cypress
+```
+
+**Note:** For continuous integration or deployment workflows, we recommend using the E2E tests (`npm run test:e2e`), which are more stable and better represent real user experiences.
+
+See [tests/README.md](tests/README.md) for detailed testing documentation.

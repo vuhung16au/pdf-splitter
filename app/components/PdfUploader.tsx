@@ -98,7 +98,7 @@ export default function PdfUploader() {
         </div>
       }
     >
-      <div className="flex flex-col items-center w-full max-w-2xl mx-auto space-y-6">
+      <div className="flex flex-col items-center w-full max-w-2xl mx-auto space-y-6" data-testid="pdf-uploader">
         <DragDropArea onFilesDrop={handleFilesDrop} isLoading={isLoading} />
 
         {error && (

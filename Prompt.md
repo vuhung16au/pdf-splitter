@@ -35,4 +35,40 @@ File structure / filenames: Help me decide it.
 
 # Add disclaimer to this page: "We don't store any data in our server"
 
-# 
+# Cypress 
+
+## Setting up Cypress in your Next.js project
+## Createing a basic test
+
+- Upload a single PDF file
+- Split the PDF into single pages
+- Download the ZIP file
+
+## Running Cypress tests
+
+- Upload multiple PDF files
+- Split the PDFs into single pages
+- Download the ZIP file
+
+- Testing error handling
+- Upload an invalid PDF file
+- Check for error messages
+- Upload a large PDF file
+- Check for error messages
+
+- Testing UI responsiveness
+- Resize the browser window
+- Check if the UI elements are responsive
+- Testing drag-and-drop functionality
+- Drag and drop a PDF file
+- Check if the file is uploaded successfully
+
+## Testing file size validation
+- Upload a PDF file larger than 100MB
+- Check for error messages
+- Upload a PDF file smaller than 100MB
+- Check if the file is uploaded successfully
+
+
+## Adding more tests
+## Running tests in CI/CD

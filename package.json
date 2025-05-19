@@ -6,7 +6,13 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "cypress": "cypress open",
+    "cypress:run": "cypress run",
+    "test": "./run-tests.sh",
+    "test:all": "./run-tests.sh all",
+    "test:e2e": "./run-tests.sh e2e",
+    "test:component": "./run-tests.sh component"
   },
   "dependencies": {
     "file-saver": "^2.0.5",
@@ -17,11 +23,17 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@cypress/react": "^9.0.1",
+    "@cypress/webpack-dev-server": "^4.1.0",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/cypress": "^10.0.3",
     "@types/file-saver": "^2.0.7",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/sinon": "^17.0.4",
+    "cypress": "^14.3.3",
+    "start-server-and-test": "^2.0.12",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
