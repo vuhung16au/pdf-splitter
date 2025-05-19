@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { NetworkProvider } from "./context/NetworkContext";
+import OfflineNotification from "./components/OfflineNotification";
+import ServiceWorkerRegistration from "./components/ServiceWorkerRegistration";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,6 +18,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "PDF Splitter",
   description: "Split multi-page PDF files into single-page PDFs and download as a zip",
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
@@ -27,7 +31,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <NetworkProvider>
+          <OfflineNotification />
+          <ServiceWorkerRegistration />
+          {children}
+        </NetworkProvider>
       </body>
     </html>
   );

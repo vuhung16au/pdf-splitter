@@ -140,6 +140,15 @@ Tests for complete user workflows:
 - multiple-pdfs.cy.ts - Tests handling multiple PDF files
 - responsive-ui.cy.ts - Tests UI responsiveness across device sizes
 - browser-compatibility.cy.ts - Tests compatibility across browsers
+- performance.cy.ts - Tests application performance metrics
+
+#### Performance Tests
+Tests that measure and monitor application performance:
+- Page Load Performance - Ensures fast initial loading
+- UI Responsiveness - Validates quick response to user interactions
+- PDF Processing Performance - Measures PDF handling efficiency
+- Memory Usage - Monitors for memory leaks
+- Error Handling Performance - Tests error handling efficiency
 
 ### Current Test Status
 
@@ -149,6 +158,8 @@ Tests for complete user workflows:
 - 6/6 tests passing in responsive-ui.cy.ts
 
 ⚠️ **Component Tests**: Being updated for React 19 compatibility
+
+⚠️ **Performance Tests**: 2 passing, 7 failing (UI responsiveness and PDF processing tests need fixes)
 
 ### Test File Structure
 
@@ -162,9 +173,18 @@ cypress/
 │   ├── home.cy.ts          # Tests for home page functionality
 │   ├── complete-workflow.cy.ts # Tests for single PDF workflow
 │   ├── multiple-pdfs.cy.ts # Tests for multiple PDF workflow
-│   └── responsive-ui.cy.ts # Tests for UI responsiveness across different screen sizes
+│   ├── responsive-ui.cy.ts # Tests for UI responsiveness across different screen sizes
+│   ├── accessibility.cy.ts # Tests for WCAG 2.1 accessibility compliance
+│   ├── browser-compatibility.cy.ts # Tests for cross-browser compatibility
+│   └── performance.cy.ts   # Tests for application performance metrics
 ├── fixtures/               # Test data files
+│   ├── a11y-test.pdf       # PDF test file for accessibility tests
+│   ├── sample.pdf          # Sample PDF for general testing
+│   └── test.pdf            # Additional test PDF
 └── support/                # Support files and custom commands
+    ├── commands.ts         # Custom Cypress commands
+    ├── a11y-commands.ts    # Accessibility testing commands
+    └── performance-commands.ts # Performance testing commands
 ```
 
 ### Core Workflow Tests
@@ -308,11 +328,16 @@ npm run cypress run --spec "cypress/e2e/responsive-ui.cy.ts"
 # Run browser compatibility tests
 npm run cypress run --spec "cypress/e2e/browser-compatibility.cy.ts"
 
+# Run performance tests
+npm run cypress run --spec "cypress/e2e/performance.cy.ts"
+# or use our custom script
+./run-performance-tests.sh [browser] [target]
+
 # Open Cypress UI for interactive testing
 npm run cypress
 ```
 
-**Note:** For continuous integration or deployment workflows, we recommend using the E2E tests (`npm run test:e2e`), which are more stable and better represent real user experiences. The responsive UI and browser compatibility tests ensure that the application works well across different device sizes and browsers.
+**Note:** For continuous integration or deployment workflows, we recommend using the E2E tests (`npm run test:e2e`), which are more stable and better represent real user experiences. The responsive UI, browser compatibility, and performance tests ensure that the application works well across different device sizes, browsers, and maintains optimal performance.
 
 See [cypress/README.md](cypress/README.md) for detailed testing documentation.
 
@@ -349,3 +374,44 @@ npm run test:a11y:chrome
 ```
 
 For more detailed information on our accessibility testing approach, see [Accessibility Testing Documentation](cypress/e2e/ACCESSIBILITY_TESTING.md).
+
+## Performance Testing
+
+The PDF Splitter application includes comprehensive performance tests to ensure optimal user experience. These tests measure and monitor various aspects of application performance:
+
+### Key Performance Metrics
+
+1. **Page Load Performance** - How quickly the application loads initially and loads critical resources
+2. **UI Responsiveness** - How quickly the interface responds to user interactions like clicks and drag events
+3. **PDF Processing Efficiency** - How fast the application processes PDF files, both individual and concurrent
+4. **Memory Management** - Monitoring for memory leaks during sustained usage
+5. **Error Handling Performance** - How quickly and efficiently the application handles invalid inputs
+
+### Running Performance Tests
+
+You can run performance tests using our dedicated script:
+
+```bash
+# Run with default browser (Chrome) against localhost
+./run-performance-tests.sh
+
+# Run with specific browser against localhost
+./run-performance-tests.sh firefox
+
+# Run with specific browser against production
+./run-performance-tests.sh chrome production
+```
+
+The performance test script:
+- Automatically starts a local development server if testing against localhost
+- Configures the appropriate test environment
+- Runs the Cypress performance tests
+- Provides a summary of test results
+
+### Performance Test Status
+
+Currently, 2 of 9 performance tests are passing (page load tests), while 7 tests need fixes related to:
+- UI responsiveness selector issues
+- PDF file handling in test fixtures
+
+For more details on performance testing, see [Performance Testing Documentation](cypress/e2e/PERFORMANCE_TESTING.md).

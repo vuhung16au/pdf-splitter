@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import Image from "next/image";
+import { useNetwork } from "../context/NetworkContext";
 
 // Set maximum file size to 100MB - same as defined in PdfUploader
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
@@ -15,6 +16,7 @@ export default function DragDropArea({ onFilesDrop, isLoading }: DragDropAreaPro
   const [isDragging, setIsDragging] = useState(false);
   const [dragError, setDragError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { isOnline } = useNetwork();
 
   const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -113,7 +115,9 @@ export default function DragDropArea({ onFilesDrop, isLoading }: DragDropAreaPro
       className={`w-full border-dashed rounded-lg p-6 mb-8 text-center flex flex-col items-center justify-center transition-all ${
         isDragging
           ? "border-blue-500 bg-blue-50 border-4"
-          : "border-gray-300 border-2"
+          : !isOnline 
+            ? "border-orange-500 bg-orange-50/30 border-2" 
+            : "border-gray-300 border-2"
       } ${isLoading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
       onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
@@ -130,6 +134,15 @@ export default function DragDropArea({ onFilesDrop, isLoading }: DragDropAreaPro
         }
       }}
     >
+      {!isOnline && (
+        <div className="absolute top-4 right-4">
+          <span className="px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full border border-orange-300 flex items-center space-x-1">
+            <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
+            <span>Offline Mode</span>
+          </span>
+        </div>
+      )}
+      
       {dragError && (
         <div className="text-red-500 mb-4" aria-live="assertive" role="alert">
           {dragError}

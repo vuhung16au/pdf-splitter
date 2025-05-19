@@ -23,6 +23,15 @@ TARGET=${3:-"localhost"}  # Default to "localhost" if no target specified
 # Check for browser compatibility test flag
 RUN_BROWSER_COMPAT=${4:-"false"}  # Default to not running browser compatibility tests
 
+# Check for performance test flag
+RUN_PERFORMANCE=${5:-"false"}  # Default to not running performance tests separately
+
+# Check for accessibility test flag
+RUN_A11Y=${6:-"false"}  # Default to not running accessibility tests separately
+
+# Check for offline functionality test flag
+RUN_OFFLINE=${7:-"false"}  # Default to not running offline functionality tests separately
+
 # Check if we're running in CI
 is_ci=false
 if [ -n "$CI" ] || [ -n "$GITHUB_ACTIONS" ]; then
@@ -103,6 +112,29 @@ if [[ "$TEST_TYPE" == "all" || "$TEST_TYPE" == "e2e" ]]; then
       npx start-server-and-test dev http://localhost:3000 "cypress run --browser $BROWSER"
     fi
   fi
+  
+  # Run performance tests if requested or if running all tests
+  if [[ "$RUN_PERFORMANCE" == "true" || "$TEST_TYPE" == "all" ]]; then
+    print_header "Running Performance Tests"
+    if [[ "$TARGET" == "production" ]]; then
+      # Run against production without starting the server
+      echo -e "Running performance tests against ${GREEN}production${NC}"
+      npx cypress run --config baseUrl=https://pdf-splitter-eta.vercel.app/ --browser $BROWSER --spec cypress/e2e/performance.cy.ts
+    else
+      # Run against localhost
+      if $is_ci; then
+        npx start-server-and-test dev http://localhost:3000 "cypress run --browser $BROWSER --spec cypress/e2e/performance.cy.ts"
+      else
+        npx start-server-and-test dev http://localhost:3000 "cypress run --browser $BROWSER --spec cypress/e2e/performance.cy.ts"
+      fi
+    fi
+    performance_status=$?
+    
+    # Include performance status in e2e status
+    if [ $performance_status -ne 0 ]; then
+      e2e_status=1
+    fi
+  fi
 
   e2e_status=$?
   
@@ -110,6 +142,68 @@ if [[ "$TEST_TYPE" == "all" || "$TEST_TYPE" == "e2e" ]]; then
   if [[ "$RUN_BROWSER_COMPAT" == "true" ]] && [ $compat_status -ne 0 ]; then
     e2e_status=1
   fi
+fi
+
+# Run Offline Functionality Tests if requested
+if [[ "$TEST_TYPE" == "all" || "$TEST_TYPE" == "offline" || "$RUN_OFFLINE" == "true" ]]; then
+  print_header "Running Offline Functionality Tests"
+  
+  # Run offline functionality tests with the specified browser
+  if [[ "$TARGET" == "production" ]]; then
+    # Run against production without starting the server
+    echo -e "Running offline functionality tests against ${GREEN}production${NC}"
+    npx cypress run --config baseUrl=https://pdf-splitter-eta.vercel.app/ --browser $BROWSER --spec cypress/e2e/offline-functionality.cy.ts
+  else
+    # Run against localhost
+    if $is_ci; then
+      npx start-server-and-test dev http://localhost:3000 "cypress run --browser $BROWSER --spec cypress/e2e/offline-functionality.cy.ts"
+    else
+      npx start-server-and-test dev http://localhost:3000 "cypress run --browser $BROWSER --spec cypress/e2e/offline-functionality.cy.ts"
+    fi
+  fi
+  
+  offline_status=$?
+  
+  if [ $offline_status -eq 0 ]; then
+    echo -e "${GREEN}✓ Offline functionality tests passed${NC}"
+  else
+    echo -e "${RED}✗ Offline functionality tests failed${NC}"
+  fi
+fi
+
+# Run Accessibility Tests if requested
+if [[ "$TEST_TYPE" == "all" || "$TEST_TYPE" == "a11y" || "$RUN_A11Y" == "true" ]]; then
+  print_header "Running Accessibility Tests in Multiple Browsers"
+  
+  # Define browsers to test
+  a11y_browsers=("chrome" "firefox" "edge")
+  a11y_status=0
+  
+  for browser in "${a11y_browsers[@]}"; do
+    echo -e "Testing accessibility in ${GREEN}$browser${NC}..."
+    
+    if [[ "$TARGET" == "production" ]]; then
+      # Run against production without starting the server
+      echo -e "Running accessibility tests against ${GREEN}production${NC}"
+      npx cypress run --config baseUrl=https://pdf-splitter-eta.vercel.app/ --browser $browser --spec cypress/e2e/accessibility.cy.ts
+    else
+      # Run against localhost
+      if $is_ci; then
+        npx start-server-and-test dev http://localhost:3000 "cypress run --browser $browser --spec cypress/e2e/accessibility.cy.ts"
+      else
+        npx start-server-and-test dev http://localhost:3000 "cypress run --browser $browser --spec cypress/e2e/accessibility.cy.ts"
+      fi
+    fi
+    
+    browser_a11y_status=$?
+    
+    if [ $browser_a11y_status -eq 0 ]; then
+      echo -e "${GREEN}✓ Accessibility tests passed on $browser${NC}"
+    else
+      echo -e "${RED}✗ Accessibility tests failed on $browser${NC}"
+      a11y_status=1
+    fi
+  done
 fi
 
 # Print summary
@@ -132,12 +226,39 @@ if [[ "$TEST_TYPE" == "all" || "$TEST_TYPE" == "e2e" ]]; then
     echo -e "${RED}✗ E2E tests failed${NC}"
     echo -e "${RED}✗ Browser: $BROWSER${NC}"
   fi
+  
+  # Report performance test status if they were run
+  if [[ "$RUN_PERFORMANCE" == "true" || "$TEST_TYPE" == "all" ]]; then
+    if [ ${performance_status:-0} -eq 0 ]; then
+      echo -e "${GREEN}✓ Performance tests passed${NC}"
+    else
+      echo -e "${RED}✗ Performance tests failed${NC}"
+    fi
+  fi
+fi
+
+# Report accessibility test status if they were run
+if [[ "$TEST_TYPE" == "all" || "$TEST_TYPE" == "a11y" || "$RUN_A11Y" == "true" ]]; then
+  if [ ${a11y_status:-0} -eq 0 ]; then
+    echo -e "${GREEN}✓ Accessibility tests passed in all browsers${NC}"
+  else
+    echo -e "${RED}✗ Some accessibility tests failed${NC}"
+  fi
+fi
+
+# Report offline functionality test status if they were run
+if [[ "$TEST_TYPE" == "all" || "$TEST_TYPE" == "offline" || "$RUN_OFFLINE" == "true" ]]; then
+  if [ ${offline_status:-0} -eq 0 ]; then
+    echo -e "${GREEN}✓ Offline functionality tests passed${NC}"
+  else
+    echo -e "${RED}✗ Offline functionality tests failed${NC}"
+  fi
 fi
 
 # Return overall status based on which tests were run
 if [[ "$TEST_TYPE" == "all" ]]; then
-  # Both tests need to pass
-  if [ $component_status -eq 0 ] && [ $e2e_status -eq 0 ]; then
+  # All tests need to pass
+  if [ ${component_status:-0} -eq 0 ] && [ ${e2e_status:-0} -eq 0 ] && [ ${a11y_status:-0} -eq 0 ] && [ ${offline_status:-0} -eq 0 ]; then
     exit 0
   else
     exit 1
@@ -148,6 +269,12 @@ elif [[ "$TEST_TYPE" == "component" ]]; then
 elif [[ "$TEST_TYPE" == "e2e" ]]; then
   # Only E2E tests need to pass
   exit $e2e_status
+elif [[ "$TEST_TYPE" == "a11y" ]]; then
+  # Only accessibility tests need to pass
+  exit ${a11y_status:-0}
+elif [[ "$TEST_TYPE" == "offline" ]]; then
+  # Only offline functionality tests need to pass
+  exit ${offline_status:-0}
 else
   # Unknown test type
   echo -e "${RED}Unknown test type: $TEST_TYPE${NC}"

@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { splitPdfToSinglePages, saveSplitPdfAsZip } from "../lib/pdfUtils";
 import DragDropArea from "./DragDropArea";
 import ErrorBoundary from "./ErrorBoundary";
+import { useNetwork } from "../context/NetworkContext";
+import OfflineStorage from "../lib/offlineStorage";
 
 // Set maximum file size to 100MB
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
@@ -13,6 +15,52 @@ export default function PdfUploader() {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [processingStatus, setProcessingStatus] = useState<string>("");
+  const [storedFiles, setStoredFiles] = useState<any[]>([]);
+  const { isOnline, addPendingOperation } = useNetwork();
+
+  // Initialize offline storage and load any stored files when component mounts
+  useEffect(() => {
+    const initStorage = async () => {
+      // Initialize the storage system
+      await OfflineStorage.init();
+
+      // Load any previously stored files from offline storage
+      try {
+        const files = await OfflineStorage.getFiles();
+        setStoredFiles(files);
+
+        // If we're back online and have pending operations, we could process them here
+        if (isOnline && files.length > 0) {
+          setProcessingStatus("Found files saved from your previous offline session");
+        }
+      } catch (err) {
+        console.error("Error loading offline files:", err);
+      }
+    };
+
+    initStorage();
+
+    // Listen for online events to process stored operations
+    const handleOnline = async () => {
+      // When we come back online, check for pending operations
+      try {
+        const operations = await OfflineStorage.getOperations();
+        if (operations.length > 0) {
+          setProcessingStatus(`Found ${operations.length} pending operation(s) from offline mode`);
+          // Process operations here if needed
+          await OfflineStorage.clearAllOperations();
+        }
+      } catch (err) {
+        console.error("Error processing pending operations:", err);
+      }
+    };
+
+    window.addEventListener('online', handleOnline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+    };
+  }, [isOnline]);
 
   const handleFilesDrop = (files: File[]) => {
     // Check for file size limits
@@ -40,6 +88,39 @@ export default function PdfUploader() {
     try {
       setIsLoading(true);
       setError(null);
+      
+      // Store files in offline storage for later use
+      for (const file of uploadedFiles) {
+        try {
+          await OfflineStorage.storeFile(file);
+        } catch (error) {
+          console.warn("Could not store file for offline use:", error);
+          // Continue even if storage fails
+        }
+      }
+
+      // Check if we're online before proceeding with network operations
+      if (!isOnline) {
+        // If offline, store the operation for later and show offline message
+        addPendingOperation({
+          type: 'splitPdf',
+          files: uploadedFiles.map(file => file.name),
+          timestamp: new Date()
+        });
+        
+        await OfflineStorage.addOperation({
+          type: 'splitPdf',
+          fileNames: uploadedFiles.map(file => file.name)
+        });
+        
+        setProcessingStatus("You're offline. Files saved and will be processed when you're back online.");
+        setTimeout(() => {
+          setIsLoading(false);
+          // Don't clear files when offline, so they can be processed later
+        }, 500);
+        return;
+      }
+      
       setProcessingStatus("Reading PDF files...");
 
       // Validate PDF files
@@ -118,9 +199,14 @@ export default function PdfUploader() {
           >
             <h3 
               id="selected-files-heading" 
-              className="text-lg font-medium mb-2"
+              className="text-lg font-medium mb-2 flex items-center justify-between"
             >
               Selected Files ({uploadedFiles.length})
+              {!isOnline && (
+                <span className="text-xs font-normal px-2 py-1 bg-orange-100 text-orange-800 rounded-full">
+                  Offline Mode
+                </span>
+              )}
             </h3>
             <ul 
               className="max-h-40 overflow-y-auto" 
@@ -143,7 +229,7 @@ export default function PdfUploader() {
               <button
                 onClick={handleProcessFiles}
                 disabled={isLoading}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition-colors disabled:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className={`flex-1 ${!isOnline ? 'bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400' : 'bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400'} text-white py-2 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
                 aria-label="Split PDF files into individual pages"
                 aria-busy={isLoading}
               >
@@ -162,9 +248,54 @@ export default function PdfUploader() {
           </div>
         )}
 
+        {/* Show stored files from offline mode if any */}
+        {storedFiles.length > 0 && isOnline && (
+          <div 
+            className="w-full max-w-xl bg-white dark:bg-gray-800 rounded-lg shadow p-4 border border-green-300"
+            aria-labelledby="saved-files-heading"
+          >
+            <h3 
+              id="saved-files-heading" 
+              className="text-lg font-medium mb-2 flex items-center justify-between"
+            >
+              <span>Previously Saved Files ({storedFiles.length})</span>
+              <span className="text-xs font-normal px-2 py-1 bg-green-100 text-green-800 rounded-full">
+                Available Offline
+              </span>
+            </h3>
+            <ul 
+              className="max-h-32 overflow-y-auto" 
+              aria-label="List of saved PDF files"
+            >
+              {storedFiles.map((fileData, index) => (
+                <li
+                  key={index}
+                  className="text-sm py-1 flex justify-between items-center"
+                >
+                  <span className="truncate max-w-[300px] pr-4">{fileData.name}</span>
+                  <span className="text-xs text-gray-500">
+                    {(fileData.size / 1024).toFixed(1)} KB
+                  </span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="flex mt-4 justify-end">
+              <button
+                onClick={() => OfflineStorage.clearAllOperations()}
+                className="text-xs text-gray-500 hover:text-gray-700"
+              >
+                Clear Storage
+              </button>
+            </div>
+          </div>
+        )}
+
         {processingStatus && (
           <div 
-            className="w-full max-w-xl text-center p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-lg"
+            className={`w-full max-w-xl text-center p-3 ${
+              !isOnline ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+            } rounded-lg`}
             aria-live="polite"
             role="status"
           >

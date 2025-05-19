@@ -1,0 +1,36 @@
+{
+  "name": "PDF Splitter",
+  "short_name": "PDF Split",
+  "description": "Split multi-page PDF files into single-page PDFs and download as a zip",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/maskable-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "orientation": "any",
+  "categories": ["productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Split PDFs",
+      "url": "/"
+    }
+  ],
+  "offline_enabled": true
+}
