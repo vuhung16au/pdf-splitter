@@ -1,0 +1,83 @@
+# PDF Splitter
+
+A web application that splits multi-paged PDF files into single-paged PDF files and packages them as a ZIP archive for download.
+
+## Features
+
+- Upload single or multiple PDF files via drag-and-drop or file picker
+- Split multi-page PDFs into single-page PDF files
+- Package the split files into a ZIP archive
+- Download the ZIP file automatically
+- Modern UI with Tailwind CSS
+- Responsive design for both desktop and mobile
+- Dark mode support
+
+## File Structure
+
+- `page.tsx` - Main page with the UI layout
+- `PdfUploader.tsx` - Component for handling file uploads and processing
+- `DragDropArea.tsx` - Component for drag and drop functionality
+- `pdfUtils.ts` - Utility functions for PDF splitting using pdf-lib
+
+## Libraries Used
+
+- **pdf-lib**: For PDF manipulation
+- **file-saver**: For downloading the generated files
+- **jszip**: For creating ZIP archives
+- **next.js & react**: For the application framework
+- **tailwindcss**: For styling
+
+## Usage
+
+1. Upload one or more PDF files by dragging them into the upload area or clicking to browse
+2. Click "Split PDFs" to process your files
+3. Each page of your PDFs will be extracted as a separate PDF file with the naming format "originalname-XX.pdf"
+4. The ZIP file "pdf-splitted.zip" containing all individual PDFs will be downloaded automatically
+
+## Getting Started
+
+First, run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/vuhung16au/pdf-splitter.git
+cd pdf-splitter
+
+# Install dependencies
+npm install
+# or
+yarn install
+
+# Run the development server
+npm run dev
+```
+
+## Technologies
+
+- Next.js 15.3.2
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- pdf-lib 1.17.1
+- JSZip 3.10.1
+- File Saver 2.0.5
+
+## Deploy on Vercel
+
+The easiest way to deploy your PDF Splitter app is to use the [Vercel Platform](https://vercel.com/new) from the creators of Next.js.
+
+Check out the [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
