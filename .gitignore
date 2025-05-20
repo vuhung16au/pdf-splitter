@@ -36,4 +36,5 @@ next-env.d.ts
 
 cypress/screenshots
 cypress/videos
-cypress/fixtures
+cypress/reports
+cypress/fixtures/large-file.pdf
