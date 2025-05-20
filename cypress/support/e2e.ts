@@ -5,6 +5,7 @@ import './mobile-commands';
 import './network-commands';
 import 'cypress-axe';
 import 'cypress-file-upload';
+import 'cypress-real-events/support';
 
 Cypress.on('uncaught:exception', (err, runnable) => {
     return false;

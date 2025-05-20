@@ -4,12 +4,16 @@ import { Suspense } from "react";
 
 // Error fallback component for the Suspense boundary
 const PdfUploaderFallback = () => (
-  <div className="w-full flex items-center justify-center p-8 border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-700">
+  <div 
+    role="status" 
+    aria-label="Loading PDF uploader"
+    className="w-full flex items-center justify-center p-8 border-2 border-dashed rounded-lg border-gray-400 dark:border-gray-600"
+  >
     <div className="flex flex-col items-center justify-center space-y-4">
-      <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-md"></div>
+      <div className="w-16 h-16 bg-gray-300 dark:bg-gray-600 animate-pulse rounded-md"></div>
       <div className="space-y-2">
-        <div className="h-4 w-40 bg-gray-200 dark:bg-gray-700 animate-pulse rounded"></div>
-        <div className="h-3 w-32 bg-gray-200 dark:bg-gray-700 animate-pulse rounded"></div>
+        <div className="h-4 w-40 bg-gray-300 dark:bg-gray-600 animate-pulse rounded"></div>
+        <div className="h-3 w-32 bg-gray-300 dark:bg-gray-600 animate-pulse rounded"></div>
       </div>
     </div>
   </div>
@@ -17,10 +21,13 @@ const PdfUploaderFallback = () => (
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[auto_1fr_auto] items-center justify-items-center min-h-screen p-6 pb-16 gap-10 sm:p-10 font-[family-name:var(--font-geist-sans)]">
+    <div 
+      className="grid grid-rows-[auto_1fr_auto] items-center justify-items-center min-h-screen p-6 pb-16 gap-10 sm:p-10 font-[family-name:var(--font-geist-sans)]"
+      role="main"
+    >
       <header className="w-full max-w-2xl text-center mt-8">
-        <h1 className="text-2xl sm:text-4xl font-bold mb-2">PDF Splitter</h1>
-        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
+        <h1 className="text-2xl sm:text-4xl font-bold mb-2 text-gray-900 dark:text-gray-100">PDF Splitter</h1>
+        <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300">
           Split multi-page PDF files into single-page PDFs and download as a zip
         </p>
       </header>
@@ -30,8 +37,12 @@ export default function Home() {
           <PdfUploader />
         </Suspense>
         
-        <div className="max-w-2xl text-sm text-gray-600 dark:text-gray-400 mt-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-          <h3 className="font-medium mb-2 text-center">How it works</h3>
+        <div 
+          className="max-w-2xl text-sm text-gray-700 dark:text-gray-300 mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg"
+          role="region"
+          aria-label="How it works"
+        >
+          <h2 className="font-medium mb-2 text-center text-gray-900 dark:text-gray-100">How it works</h2>
           <ol className="list-decimal pl-5 space-y-1">
             <li>Upload one or more PDF files by dragging them into the upload area or clicking to browse (100MB max per file)</li>
             <li>Click &quot;Split PDFs&quot; to process your files</li>
@@ -40,18 +51,25 @@ export default function Home() {
           </ol>
         </div>
         
-        <div className="max-w-2xl w-full text-sm text-blue-600 dark:text-blue-400 p-3 border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-center">
+        <div 
+          className="max-w-2xl w-full text-sm text-blue-700 dark:text-blue-300 p-3 border border-blue-300 dark:border-blue-700 bg-blue-100 dark:bg-blue-900/50 rounded-lg text-center"
+          role="alert"
+        >
           <p>🔒 <strong>Privacy Notice:</strong> We don't store any data in our server. All processing happens in your browser.</p>
         </div>
       </main>
       
-      <footer className="row-start-3 w-full text-center py-6 text-sm text-gray-500 dark:text-gray-400">
+      <footer 
+        className="row-start-3 w-full text-center py-6 text-sm text-gray-600 dark:text-gray-300"
+        role="contentinfo"
+      >
         <p>© {new Date().getFullYear()} Make in 707. PDF Splitter. Built with Next.js and PDF-lib.</p>
         <a 
           href="https://github.com/vuhung16au/pdf-splitter" 
           target="_blank" 
           rel="noopener noreferrer" 
-          className="inline-block mt-2 text-blue-500 hover:text-blue-700 transition-colors"
+          className="inline-block mt-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+          aria-label="Visit our GitHub repository"
         >
           GitHub Repository
         </a>

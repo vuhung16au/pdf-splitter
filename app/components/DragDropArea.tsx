@@ -114,29 +114,23 @@ export default function DragDropArea({ onFilesDrop, isLoading }: DragDropAreaPro
     <div
       className={`w-full border-dashed rounded-lg p-6 mb-8 text-center flex flex-col items-center justify-center transition-all ${
         isDragging
-          ? "border-blue-500 bg-blue-50 border-4"
+          ? "border-blue-500 bg-blue-100 dark:bg-blue-900/30 border-4"
           : !isOnline 
-            ? "border-orange-500 bg-orange-50/30 border-2" 
-            : "border-gray-300 border-2"
+            ? "border-orange-500 bg-orange-100 dark:bg-orange-900/30 border-2" 
+            : "border-gray-400 dark:border-gray-600 border-2"
       } ${isLoading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
       onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       onClick={handleButtonClick}
-      data-testid="pdf-uploader"
+      data-testid="dragdrop-area"
       role="region"
       aria-label="PDF file upload area"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          handleButtonClick();
-        }
-      }}
     >
       {!isOnline && (
         <div className="absolute top-4 right-4">
-          <span className="px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full border border-orange-300 flex items-center space-x-1">
+          <span className="px-2 py-1 text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 rounded-full border border-orange-300 dark:border-orange-700 flex items-center space-x-1">
             <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
             <span>Offline Mode</span>
           </span>
@@ -144,7 +138,11 @@ export default function DragDropArea({ onFilesDrop, isLoading }: DragDropAreaPro
       )}
       
       {dragError && (
-        <div className="text-red-500 mb-4" aria-live="assertive" role="alert">
+        <div 
+          className="text-red-800 dark:text-red-200 mb-4" 
+          aria-live="assertive" 
+          role="alert"
+        >
           {dragError}
         </div>
       )}
@@ -169,19 +167,22 @@ export default function DragDropArea({ onFilesDrop, isLoading }: DragDropAreaPro
             height={64}
             className="mb-4"
           />
-          <h2 className="text-xl font-semibold mb-2">Drag and drop PDF files here</h2>
-          <p className="text-gray-600">
+          <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100">Drag and drop PDF files here</h2>
+          <p className="text-gray-700 dark:text-gray-300">
             or{" "}
-            <span className="text-blue-500 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded" tabIndex={0} role="button" aria-label="click to select PDF files">
+            <span 
+              className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer" 
+              onClick={handleButtonClick}
+            >
               click to select PDF files
             </span>
           </p>
-          <p className="mt-4 text-sm text-gray-500">Max file size: 100MB</p>
+          <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">Max file size: 100MB</p>
         </>
       ) : (
         <div className="flex flex-col items-center" aria-live="polite">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-          <p className="text-gray-600">Processing...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4" role="status" aria-label="Processing files"></div>
+          <p className="text-gray-700 dark:text-gray-300">Processing...</p>
         </div>
       )}
     </div>

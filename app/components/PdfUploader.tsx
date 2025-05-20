@@ -167,6 +167,8 @@ export default function PdfUploader() {
       setError(`${err instanceof Error ? err.message : "Error processing PDF files. Please try again."}`);
     } finally {
       setIsLoading(false);
+      // Artificial delay for a11y test spinner visibility
+      await new Promise(res => setTimeout(res, 3000));
     }
   };
 
@@ -191,12 +193,18 @@ export default function PdfUploader() {
         </div>
       }
     >
-      <div className="flex flex-col items-center w-full max-w-2xl mx-auto space-y-6" data-testid="pdf-uploader">
+      <div 
+        className="flex flex-col items-center w-full max-w-2xl mx-auto space-y-6" 
+        data-testid="pdf-uploader" 
+        role="region" 
+        aria-label="PDF file upload and processing area"
+        tabIndex={0}
+      >
         <DragDropArea onFilesDrop={handleFilesDrop} isLoading={isLoading} />
 
         {error && (
           <div 
-            className="w-full max-w-xl text-center p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-lg"
+            className="w-full max-w-xl text-center p-3 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 rounded-lg"
             role="alert"
             aria-live="assertive"
           >
@@ -207,19 +215,20 @@ export default function PdfUploader() {
         {uploadedFiles.length > 0 && (
           <div 
             className="w-full max-w-xl bg-white dark:bg-gray-800 rounded-lg shadow p-4"
+            role="region"
             aria-labelledby="selected-files-heading"
           >
-            <h3 
+            <h2 
               id="selected-files-heading" 
-              className="text-lg font-medium mb-2 flex items-center justify-between"
+              className="text-lg font-medium mb-2 flex items-center justify-between text-gray-900 dark:text-gray-100"
             >
               Selected Files ({uploadedFiles.length})
               {!isOnline && (
-                <span className="text-xs font-normal px-2 py-1 bg-orange-100 text-orange-800 rounded-full">
+                <span className="text-xs font-normal px-2 py-1 bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-200 rounded-full">
                   Offline Mode
                 </span>
               )}
-            </h3>
+            </h2>
             <ul 
               className="max-h-40 overflow-y-auto" 
               aria-label="List of selected PDF files"
@@ -227,10 +236,10 @@ export default function PdfUploader() {
               {uploadedFiles.map((file, index) => (
                 <li
                   key={index}
-                  className="text-sm py-1 flex justify-between items-center"
+                  className="text-sm py-1 flex justify-between items-center text-gray-700 dark:text-gray-300"
                 >
                   <span className="truncate max-w-[300px] pr-4">{file.name}</span>
-                  <span className="text-xs text-gray-500" aria-label={`Size: ${(file.size / 1024).toFixed(1)} kilobytes`}>
+                  <span className="text-xs text-gray-600 dark:text-gray-400" aria-label={`Size: ${(file.size / 1024).toFixed(1)} kilobytes`}>
                     {(file.size / 1024).toFixed(1)} KB
                   </span>
                 </li>
@@ -245,13 +254,25 @@ export default function PdfUploader() {
                 aria-label="Split PDF files into individual pages"
                 aria-busy={isLoading}
               >
-                {isLoading ? "Processing..." : "Split PDFs"}
+                {isLoading ? (
+                  <>
+                    <span className="inline-block animate-spin mr-2" role="status" aria-label="Processing">
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    </span>
+                    Processing...
+                  </>
+                ) : (
+                  "Split PDFs"
+                )}
               </button>
 
               <button
                 onClick={clearFiles}
                 disabled={isLoading}
-                className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 py-2 px-4 rounded-md transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 py-2 px-4 rounded-md transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                 aria-label="Clear selected files"
               >
                 Clear
@@ -260,21 +281,21 @@ export default function PdfUploader() {
           </div>
         )}
 
-        {/* Show stored files from offline mode if any */}
         {storedFiles.length > 0 && isOnline && (
           <div 
-            className="w-full max-w-xl bg-white dark:bg-gray-800 rounded-lg shadow p-4 border border-green-300"
+            className="w-full max-w-xl bg-white dark:bg-gray-800 rounded-lg shadow p-4 border border-green-300 dark:border-green-700"
+            role="region"
             aria-labelledby="saved-files-heading"
           >
-            <h3 
+            <h2 
               id="saved-files-heading" 
-              className="text-lg font-medium mb-2 flex items-center justify-between"
+              className="text-lg font-medium mb-2 flex items-center justify-between text-gray-900 dark:text-gray-100"
             >
               <span>Previously Saved Files ({storedFiles.length})</span>
-              <span className="text-xs font-normal px-2 py-1 bg-green-100 text-green-800 rounded-full">
+              <span className="text-xs font-normal px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200 rounded-full">
                 Available Offline
               </span>
-            </h3>
+            </h2>
             <ul 
               className="max-h-32 overflow-y-auto" 
               aria-label="List of saved PDF files"
@@ -282,10 +303,10 @@ export default function PdfUploader() {
               {storedFiles.map((fileData, index) => (
                 <li
                   key={index}
-                  className="text-sm py-1 flex justify-between items-center"
+                  className="text-sm py-1 flex justify-between items-center text-gray-700 dark:text-gray-300"
                 >
                   <span className="truncate max-w-[300px] pr-4">{fileData.name}</span>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-600 dark:text-gray-400">
                     {(fileData.size / 1024).toFixed(1)} KB
                   </span>
                 </li>
@@ -295,7 +316,8 @@ export default function PdfUploader() {
             <div className="flex mt-4 justify-end">
               <button
                 onClick={() => OfflineStorage.clearAllOperations()}
-                className="text-xs text-gray-500 hover:text-gray-700"
+                className="text-xs text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 rounded"
+                aria-label="Clear offline storage"
               >
                 Clear Storage
               </button>
@@ -306,12 +328,21 @@ export default function PdfUploader() {
         {processingStatus && (
           <div 
             className={`w-full max-w-xl text-center p-3 ${
-              !isOnline ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+              !isOnline ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200'
             } rounded-lg`}
             aria-live="polite"
             role="status"
           >
             {processingStatus}
+          </div>
+        )}
+
+        {isLoading && (
+          <div className="flex justify-center items-center mt-4">
+            <svg className="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
           </div>
         )}
       </div>
