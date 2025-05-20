@@ -39,3 +39,7 @@ cypress/downloads
 cypress/videos
 cypress/reports
 cypress/fixtures/large-file.pdf
+
+# Playwright
+playwright-report
+test-results
