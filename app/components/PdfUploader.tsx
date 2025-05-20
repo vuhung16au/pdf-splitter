@@ -1,14 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { splitPdfToSinglePages, saveSplitPdfAsZip } from "../lib/pdfUtils";
 import DragDropArea from "./DragDropArea";
 import ErrorBoundary from "./ErrorBoundary";
 import { useNetwork } from "../context/NetworkContext";
 import OfflineStorage from "../lib/offlineStorage";
+import { validatePdfFile, sanitizeFilename } from '../lib/validation';
+import { useDropzone } from 'react-dropzone';
+import JSZip from 'jszip';
+import pdfjsLib from 'pdfjs-dist';
 
 // Set maximum file size to 100MB
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
+// Maximum number of files that can be uploaded at once
+const MAX_FILES = 10;
+// Allowed file types
+const ALLOWED_FILE_TYPES = ['application/pdf'];
+// Maximum filename length
+const MAX_FILENAME_LENGTH = 255;
 
 interface StoredFile {
   id?: number;
@@ -71,22 +81,66 @@ export default function PdfUploader() {
     };
   }, [isOnline]);
 
-  const handleFilesDrop = (files: File[]) => {
-    // Check for file size limits
-    const oversizedFiles = files.filter((file) => file.size > MAX_FILE_SIZE);
-
-    if (oversizedFiles.length > 0) {
-      const fileNames = oversizedFiles.map((file) => file.name).join(", ");
-      setError(`File size exceeds the limit (100MB): ${fileNames}`);
-      // Filter out oversized files
-      const validFiles = files.filter((file) => file.size <= MAX_FILE_SIZE);
-      setUploadedFiles(validFiles);
+  const handleFilesDrop = useCallback((acceptedFiles: File[]) => {
+    setError(null);
+    
+    // Check number of files
+    if (acceptedFiles.length > MAX_FILES) {
+      setError(`Maximum ${MAX_FILES} files allowed`);
       return;
     }
 
-    setUploadedFiles(files);
-    setError(null);
-  };
+    const validFiles: File[] = [];
+    const invalidFiles: string[] = [];
+
+    acceptedFiles.forEach(file => {
+      // Check file size
+      if (file.size > MAX_FILE_SIZE) {
+        invalidFiles.push(`${file.name} (exceeds ${MAX_FILE_SIZE / (1024 * 1024)}MB limit)`);
+        return;
+      }
+
+      // Validate file type using magic numbers
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const arr = new Uint8Array(e.target?.result as ArrayBuffer).subarray(0, 4);
+        const header = Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+        const isPdf = header === '25504446'; // PDF magic number
+
+        if (!isPdf) {
+          invalidFiles.push(`${file.name} (not a valid PDF)`);
+          return;
+        }
+
+        // Sanitize filename
+        const sanitizedName = sanitizeFilename(file.name);
+        if (sanitizedName !== file.name) {
+          const newFile = new File([file], sanitizedName, { type: file.type });
+          validFiles.push(newFile);
+        } else {
+          validFiles.push(file);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    if (invalidFiles.length > 0) {
+      setError(`Invalid files: ${invalidFiles.join(', ')}`);
+    }
+
+    if (validFiles.length > 0) {
+      setUploadedFiles(prev => [...prev, ...validFiles]);
+    }
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop: handleFilesDrop,
+    accept: {
+      'application/pdf': ['.pdf']
+    },
+    maxSize: MAX_FILE_SIZE,
+    multiple: true
+  });
 
   const handleProcessFiles = async () => {
     if (uploadedFiles.length === 0) {
@@ -128,16 +182,15 @@ export default function PdfUploader() {
         setProcessingStatus("You're offline. Files saved and will be processed when you're back online.");
         setTimeout(() => {
           setIsLoading(false);
-          // Don't clear files when offline, so they can be processed later
         }, 500);
         return;
       }
       
       setProcessingStatus("Reading PDF files...");
 
-      // Validate PDF files
+      // Additional validation before processing
       for (const file of uploadedFiles) {
-        if (file.type !== 'application/pdf') {
+        if (!validatePdfFile(file)) {
           throw new Error(`File "${file.name}" is not a valid PDF`);
         }
       }
@@ -200,7 +253,18 @@ export default function PdfUploader() {
         aria-label="PDF file upload and processing area"
         tabIndex={0}
       >
-        <DragDropArea onFilesDrop={handleFilesDrop} isLoading={isLoading} />
+        <div
+          {...getRootProps()}
+          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
+            ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-blue-400'}`}
+        >
+          <input {...getInputProps()} />
+          {isDragActive ? (
+            <p className="text-blue-500">Drop the files here...</p>
+          ) : (
+            <p>Drag and drop PDF files here, or click to select files</p>
+          )}
+        </div>
 
         {error && (
           <div 

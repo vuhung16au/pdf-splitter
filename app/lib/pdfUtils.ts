@@ -2,96 +2,46 @@
 
 import { PDFDocument } from 'pdf-lib';
 import JSZip from 'jszip';
-import { saveAs } from 'file-saver';
+import { csrfFetch } from './csrf';
 
 /**
  * Splits PDF files into individual pages and creates a ZIP archive
- * @param pdfFiles Array of PDF files to process
+ * @param files Array of PDF files to process
  * @returns Promise resolving to a Blob containing the ZIP archive
  * @throws Error if PDF processing fails
  */
-export async function splitPdfToSinglePages(pdfFiles: File[]): Promise<Blob> {
-  // Create a new zip file
+export async function splitPdfToSinglePages(files: File[]): Promise<Blob> {
   const zip = new JSZip();
   
-  // Process each PDF file
-  for (const pdfFile of pdfFiles) {
+  for (const file of files) {
     try {
-      // Validate the file is indeed a PDF
-      if (pdfFile.type !== 'application/pdf') {
-        throw new Error(`File "${pdfFile.name}" is not a valid PDF`);
-      }
-
-      const arrayBuffer = await pdfFile.arrayBuffer().catch(err => {
-        throw new Error(`Failed to read "${pdfFile.name}": ${err.message}`);
-      });
-      
-      const pdfDoc = await PDFDocument.load(arrayBuffer).catch(err => {
-        throw new Error(`Failed to parse "${pdfFile.name}": ${err.message}`);
-      });
-      
-      // Get the total number of pages
+      // Read the PDF file
+      const arrayBuffer = await file.arrayBuffer();
+      const pdfDoc = await PDFDocument.load(arrayBuffer);
       const pageCount = pdfDoc.getPageCount();
-      
-      if (pageCount === 0) {
-        throw new Error(`PDF file "${pdfFile.name}" has no pages to extract`);
-      }
-      
-      // Get the filename without extension
-      const filename = pdfFile.name.replace(/\.pdf$/i, '');
-      
-      // Process each page
+
+      // Split each page into a separate PDF
       for (let i = 0; i < pageCount; i++) {
-        try {
-          // Create a new document for this page
-          const newPdfDoc = await PDFDocument.create();
-          
-          // Copy the page from the original document
-          const [copiedPage] = await newPdfDoc.copyPages(pdfDoc, [i]);
-          newPdfDoc.addPage(copiedPage);
-          
-          // Save the new document
-          const pdfBytes = await newPdfDoc.save();
-          
-          // Format the page number with leading zeros based on total pages
-          const pageNumberStr = String(i + 1).padStart(
-            pageCount >= 100 ? 3 : (pageCount >= 10 ? 2 : 1), '0'
-          );
-          
-          // Add to zip with a formatted name
-          const newFilename = `${filename}-${pageNumberStr}.pdf`;
-          zip.file(newFilename, pdfBytes);
-        } catch (pageErr) {
-          console.error(`Error processing page ${i + 1} of "${pdfFile.name}":`, pageErr);
-          // Continue with next page instead of failing the entire process
-        }
+        const newPdf = await PDFDocument.create();
+        const [copiedPage] = await newPdf.copyPages(pdfDoc, [i]);
+        newPdf.addPage(copiedPage);
+
+        // Save the single-page PDF
+        const pdfBytes = await newPdf.save();
+        
+        // Add to zip with sanitized filename
+        const fileName = file.name.replace(/\.pdf$/i, '');
+        const pageNumber = i + 1;
+        zip.file(`${fileName}_page${pageNumber}.pdf`, pdfBytes);
       }
-    } catch (fileErr) {
-      console.error(`Error processing file "${pdfFile.name}":`, fileErr);
-      throw new Error(`Failed to process "${pdfFile.name}": ${fileErr instanceof Error ? fileErr.message : 'Unknown error'}`);
+    } catch (error) {
+      console.error(`Error processing file ${file.name}:`, error);
+      throw new Error(`Failed to process ${file.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
-  // Check if any files were added to the zip
-  if (Object.keys(zip.files).length === 0) {
-    throw new Error("No PDF pages could be processed. Please check your files and try again.");
-  }
-  
-  try {
-    // Generate the zip file
-    const zipBlob = await zip.generateAsync({
-      type: 'blob',
-      compression: 'DEFLATE', 
-      compressionOptions: {
-        level: 6 // Compression level (1-9), higher is more compression but slower
-      }
-    });
-    
-    return zipBlob;
-  } catch (zipErr) {
-    console.error("Error generating ZIP archive:", zipErr);
-    throw new Error(`Failed to create ZIP file: ${zipErr instanceof Error ? zipErr.message : 'Unknown error'}`);
-  }
+  // Generate the zip file
+  return zip.generateAsync({ type: 'blob' });
 }
 
 /**
@@ -102,9 +52,51 @@ export async function splitPdfToSinglePages(pdfFiles: File[]): Promise<Blob> {
  */
 export async function saveSplitPdfAsZip(zipBlob: Blob): Promise<void> {
   try {
-    saveAs(zipBlob, 'pdf-splitted.zip');
-  } catch (err) {
-    console.error("Error saving ZIP file:", err);
-    throw new Error(`Failed to download ZIP file: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    // Create a download link
+    const url = URL.createObjectURL(zipBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'split_pdfs.zip';
+    
+    // Trigger download
+    document.body.appendChild(link);
+    link.click();
+    
+    // Cleanup
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Error saving ZIP file:', error);
+    throw new Error('Failed to save ZIP file');
+  }
+}
+
+// Function to validate PDF file structure
+export async function validatePdfStructure(file: File): Promise<boolean> {
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdfDoc = await PDFDocument.load(arrayBuffer);
+    return pdfDoc.getPageCount() > 0;
+  } catch (error) {
+    return false;
+  }
+}
+
+// Function to get PDF metadata
+export async function getPdfMetadata(file: File): Promise<{
+  pageCount: number;
+  fileSize: number;
+  fileName: string;
+}> {
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdfDoc = await PDFDocument.load(arrayBuffer);
+    return {
+      pageCount: pdfDoc.getPageCount(),
+      fileSize: file.size,
+      fileName: file.name,
+    };
+  } catch (error) {
+    throw new Error(`Failed to get PDF metadata: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }

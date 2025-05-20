@@ -1,43 +1,68 @@
 'use client';
 
-import { Component, ErrorInfo, ReactNode } from 'react';
+import React from 'react';
 
 interface Props {
-  children: ReactNode;
-  fallback?: ReactNode;
+  children: React.ReactNode;
 }
 
 interface State {
-  hasError: boolean;
-  error?: Error;
+  error: Error | null;
 }
 
-class ErrorBoundary extends Component<Props, State> {
+export default class ErrorBoundary extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { error: null };
   }
 
   static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
+    return { error };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    console.error("PDF Splitter error:", error, errorInfo);
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    // Log error to monitoring service
+    console.error('Error caught by boundary:', error, errorInfo);
+  }
+
+  sanitizeErrorMessage(error: Error): string {
+    // Remove HTML tags and potentially dangerous protocols
+    let message = error.message
+      .replace(/<[^>]*>/g, '')
+      .replace(/javascript:/gi, '')
+      .replace(/data:/gi, '')
+      .replace(/vbscript:/gi, '')
+      .replace(/onload=/gi, '')
+      .replace(/onerror=/gi, '');
+
+    // Limit message length
+    if (message.length > 200) {
+      message = message.substring(0, 200) + '...';
+    }
+
+    return message;
   }
 
   render() {
-    if (this.state.hasError) {
-      return this.props.fallback || (
-        <div className="p-4 border border-red-300 bg-red-50 dark:bg-red-900/20 rounded-md text-red-700 dark:text-red-400">
-          <h3 className="font-medium mb-2">Something went wrong</h3>
-          <p className="text-sm">There was an error processing your request. Please try again.</p>
-          <button 
-            className="mt-2 px-3 py-1 bg-red-100 dark:bg-red-800 text-red-700 dark:text-red-300 rounded hover:bg-red-200 dark:hover:bg-red-700"
-            onClick={() => this.setState({ hasError: false })}
-          >
-            Try Again
-          </button>
+    if (this.state.error) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+          <div className="max-w-md w-full space-y-8 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md text-center">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              Something went wrong
+            </h2>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
+              {this.sanitizeErrorMessage(this.state.error)}
+            </p>
+            <div className="mt-6">
+              <button
+                onClick={() => window.location.reload()}
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Reload Application
+              </button>
+            </div>
+          </div>
         </div>
       );
     }
@@ -45,5 +70,3 @@ class ErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
-
-export default ErrorBoundary;
