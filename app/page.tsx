@@ -22,27 +22,34 @@ const PdfUploaderFallback = () => (
 export default function Home() {
   return (
     <div 
-      className="grid grid-rows-[auto_1fr_auto] items-center justify-items-center min-h-screen p-6 pb-16 gap-10 sm:p-10 font-[family-name:var(--font-geist-sans)]"
+      className="grid grid-rows-[auto_1fr_auto] items-center justify-items-center min-h-screen px-2 sm:px-6 pb-16 gap-6 sm:gap-10 font-sans bg-white dark:bg-gray-950"
       role="main"
+      style={{
+        WebkitOverflowScrolling: 'touch', // iOS momentum scrolling
+        overscrollBehavior: 'contain', // Prevent scroll chaining
+        willChange: 'scroll-position', // Hint for smooth scrolling
+      }}
     >
-      <header className="w-full max-w-2xl text-center mt-8">
-        <h1 className="text-2xl sm:text-4xl font-bold mb-2 text-gray-900 dark:text-gray-100">PDF Splitter</h1>
-        <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300">
+      <header className="w-full max-w-2xl text-center mt-6 sm:mt-8">
+        <h1 className="text-xl sm:text-4xl font-bold mb-2 text-gray-900 dark:text-gray-100">PDF Splitter</h1>
+        <p className="text-xs sm:text-base text-gray-700 dark:text-gray-300">
           Split multi-page PDF files into single-page PDFs and download as a zip
         </p>
       </header>
       
-      <main className="flex flex-col gap-8 row-start-2 items-center w-full">
+      <main className="flex flex-col gap-6 sm:gap-8 row-start-2 items-center w-full max-w-2xl mx-auto">
         <Suspense fallback={<PdfUploaderFallback />}>
-          <PdfUploader />
+          <div className="w-full">
+            <PdfUploader />
+          </div>
         </Suspense>
         
         <div 
-          className="max-w-2xl text-sm text-gray-700 dark:text-gray-300 mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg"
+          className="max-w-2xl w-full text-sm text-gray-700 dark:text-gray-300 mt-4 p-3 sm:p-4 bg-gray-100 dark:bg-gray-800 rounded-lg"
           role="region"
           aria-label="How it works"
         >
-          <h2 className="font-medium mb-2 text-center text-gray-900 dark:text-gray-100">How it works</h2>
+          <h3 className="font-medium mb-2 text-center text-gray-900 dark:text-gray-100">How it works</h3>
           <ol className="list-decimal pl-5 space-y-1">
             <li>Upload one or more PDF files by dragging them into the upload area or clicking to browse (100MB max per file)</li>
             <li>Click &quot;Split PDFs&quot; to process your files</li>
@@ -52,7 +59,7 @@ export default function Home() {
         </div>
         
         <div 
-          className="max-w-2xl w-full text-sm text-blue-700 dark:text-blue-300 p-3 border border-blue-300 dark:border-blue-700 bg-blue-100 dark:bg-blue-900/50 rounded-lg text-center"
+          className="max-w-2xl w-full text-xs sm:text-sm text-blue-700 dark:text-blue-300 p-2 sm:p-3 border border-blue-300 dark:border-blue-700 bg-blue-100 dark:bg-blue-900/50 rounded-lg text-center"
           role="alert"
         >
           <p>🔒 <strong>Privacy Notice:</strong> We don't store any data in our server. All processing happens in your browser.</p>
@@ -60,7 +67,7 @@ export default function Home() {
       </main>
       
       <footer 
-        className="row-start-3 w-full text-center py-6 text-sm text-gray-600 dark:text-gray-300"
+        className="row-start-3 w-full text-center py-4 sm:py-6 text-xs sm:text-sm text-gray-600 dark:text-gray-300"
         role="contentinfo"
       >
         <p>© {new Date().getFullYear()} Make in 707. PDF Splitter. Built with Next.js and PDF-lib.</p>

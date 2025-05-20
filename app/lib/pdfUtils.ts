@@ -3,6 +3,7 @@
 import { PDFDocument } from 'pdf-lib';
 import JSZip from 'jszip';
 import { csrfFetch } from './csrf';
+import { saveAs } from 'file-saver';
 
 /**
  * Splits PDF files into individual pages and creates a ZIP archive
@@ -52,19 +53,7 @@ export async function splitPdfToSinglePages(files: File[]): Promise<Blob> {
  */
 export async function saveSplitPdfAsZip(zipBlob: Blob): Promise<void> {
   try {
-    // Create a download link
-    const url = URL.createObjectURL(zipBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'split_pdfs.zip';
-    
-    // Trigger download
-    document.body.appendChild(link);
-    link.click();
-    
-    // Cleanup
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    saveAs(zipBlob, 'split_pdfs.zip');
   } catch (error) {
     console.error('Error saving ZIP file:', error);
     throw new Error('Failed to save ZIP file');

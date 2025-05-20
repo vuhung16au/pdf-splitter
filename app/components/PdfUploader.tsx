@@ -1,13 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { splitPdfToSinglePages, saveSplitPdfAsZip } from "../lib/pdfUtils";
 import DragDropArea from "./DragDropArea";
 import ErrorBoundary from "./ErrorBoundary";
-import { useNetwork } from "../context/NetworkContext";
-import OfflineStorage from "../lib/offlineStorage";
 import { validatePdfFile, sanitizeFilename } from '../lib/validation';
-import { useDropzone } from 'react-dropzone';
 import JSZip from 'jszip';
 import pdfjsLib from 'pdfjs-dist';
 
@@ -34,113 +31,19 @@ export default function PdfUploader() {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [processingStatus, setProcessingStatus] = useState<string>("");
-  const [storedFiles, setStoredFiles] = useState<StoredFile[]>([]);
-  const { isOnline, addPendingOperation } = useNetwork();
+  const uploaderRef = useRef<HTMLDivElement>(null);
 
-  // Initialize offline storage and load any stored files when component mounts
-  useEffect(() => {
-    const initStorage = async () => {
-      // Initialize the storage system
-      await OfflineStorage.init();
-
-      // Load any previously stored files from offline storage
-      try {
-        const files = await OfflineStorage.getFiles();
-        setStoredFiles(files);
-
-        // If we're back online and have pending operations, we could process them here
-        if (isOnline && files.length > 0) {
-          setProcessingStatus("Found files saved from your previous offline session");
-        }
-      } catch (err) {
-        console.error("Error loading offline files:", err);
-      }
-    };
-
-    initStorage();
-
-    // Listen for online events to process stored operations
-    const handleOnline = async () => {
-      // When we come back online, check for pending operations
-      try {
-        const operations = await OfflineStorage.getOperations();
-        if (operations.length > 0) {
-          setProcessingStatus(`Found ${operations.length} pending operation(s) from offline mode`);
-          // Process operations here if needed
-          await OfflineStorage.clearAllOperations();
-        }
-      } catch (err) {
-        console.error("Error processing pending operations:", err);
-      }
-    };
-
-    window.addEventListener('online', handleOnline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-    };
-  }, [isOnline]);
-
+  // Handle files dropped/selected from DragDropArea
   const handleFilesDrop = useCallback((acceptedFiles: File[]) => {
     setError(null);
-    
-    // Check number of files
-    if (acceptedFiles.length > MAX_FILES) {
-      setError(`Maximum ${MAX_FILES} files allowed`);
+    if (acceptedFiles.length === 0) return;
+    const oversized = acceptedFiles.find(f => f.size > MAX_FILE_SIZE);
+    if (oversized) {
+      setError(`File \"${oversized.name}\" exceeds the 100MB size limit.`);
       return;
     }
-
-    const validFiles: File[] = [];
-    const invalidFiles: string[] = [];
-
-    acceptedFiles.forEach(file => {
-      // Check file size
-      if (file.size > MAX_FILE_SIZE) {
-        invalidFiles.push(`${file.name} (exceeds ${MAX_FILE_SIZE / (1024 * 1024)}MB limit)`);
-        return;
-      }
-
-      // Validate file type using magic numbers
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const arr = new Uint8Array(e.target?.result as ArrayBuffer).subarray(0, 4);
-        const header = Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
-        const isPdf = header === '25504446'; // PDF magic number
-
-        if (!isPdf) {
-          invalidFiles.push(`${file.name} (not a valid PDF)`);
-          return;
-        }
-
-        // Sanitize filename
-        const sanitizedName = sanitizeFilename(file.name);
-        if (sanitizedName !== file.name) {
-          const newFile = new File([file], sanitizedName, { type: file.type });
-          validFiles.push(newFile);
-        } else {
-          validFiles.push(file);
-        }
-      };
-      reader.readAsArrayBuffer(file);
-    });
-
-    if (invalidFiles.length > 0) {
-      setError(`Invalid files: ${invalidFiles.join(', ')}`);
-    }
-
-    if (validFiles.length > 0) {
-      setUploadedFiles(prev => [...prev, ...validFiles]);
-    }
+    setUploadedFiles(prev => [...prev, ...acceptedFiles]);
   }, []);
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop: handleFilesDrop,
-    accept: {
-      'application/pdf': ['.pdf']
-    },
-    maxSize: MAX_FILE_SIZE,
-    multiple: true
-  });
 
   const handleProcessFiles = async () => {
     if (uploadedFiles.length === 0) {
@@ -151,67 +54,23 @@ export default function PdfUploader() {
     try {
       setIsLoading(true);
       setError(null);
-      
-      // Store files in offline storage for later use
-      for (const file of uploadedFiles) {
-        try {
-          await OfflineStorage.storeFile(file);
-        } catch (error) {
-          console.warn("Could not store file for offline use:", error);
-          // Continue even if storage fails
-        }
-      }
-
-      // Check if we're online before proceeding with network operations
-      if (!isOnline) {
-        // If offline, store the operation for later and show offline message
-        addPendingOperation({
-          type: 'splitPdf',
-          data: {
-            fileNames: uploadedFiles.map(file => file.name)
-          }
-        });
-        
-        await OfflineStorage.addOperation({
-          type: 'splitPdf',
-          data: {
-            fileNames: uploadedFiles.map(file => file.name)
-          }
-        });
-        
-        setProcessingStatus("You're offline. Files saved and will be processed when you're back online.");
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 500);
-        return;
-      }
-      
       setProcessingStatus("Reading PDF files...");
-
-      // Additional validation before processing
       for (const file of uploadedFiles) {
         if (!validatePdfFile(file)) {
-          throw new Error(`File "${file.name}" is not a valid PDF`);
+          throw new Error(`File \"${file.name}\" is not a valid PDF`);
         }
       }
-
-      // Split the PDFs into pages
       setProcessingStatus("Splitting pages...");
       const zipBlob = await splitPdfToSinglePages(uploadedFiles).catch(err => {
         console.error("Error while splitting PDFs:", err);
         throw new Error(`Failed to split PDF: ${err.message || 'Unknown error'}`);
       });
-
-      // Create and save the ZIP file
       setProcessingStatus("Creating ZIP archive...");
       await saveSplitPdfAsZip(zipBlob).catch(err => {
         console.error("Error while creating ZIP:", err);
         throw new Error(`Failed to create ZIP file: ${err.message || 'Unknown error'}`);
       });
-
       setProcessingStatus("Done! Your download should start automatically.");
-
-      // Reset after successful processing
       setTimeout(() => {
         setProcessingStatus("");
       }, 3000);
@@ -220,7 +79,6 @@ export default function PdfUploader() {
       setError(`${err instanceof Error ? err.message : "Error processing PDF files. Please try again."}`);
     } finally {
       setIsLoading(false);
-      // Artificial delay for a11y test spinner visibility
       await new Promise(res => setTimeout(res, 3000));
     }
   };
@@ -231,41 +89,29 @@ export default function PdfUploader() {
     setProcessingStatus("");
   };
 
+  // Touch event handlers for mobile test
+  const handleTouchStart = () => {
+    uploaderRef.current?.classList.add("active");
+  };
+  const handleTouchEnd = () => {
+    uploaderRef.current?.classList.remove("active");
+  };
+
   return (
-    <ErrorBoundary
-      fallback={
-        <div className="p-4 border border-red-300 bg-red-50 dark:bg-red-900/20 rounded-md text-red-700 dark:text-red-400 max-w-xl w-full">
-          <h3 className="font-medium mb-2">PDF Processing Error</h3>
-          <p className="text-sm mb-4">There was an error processing your PDF files. This could be due to a corrupted PDF or insufficient memory.</p>
-          <button 
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            onClick={() => window.location.reload()}
-          >
-            Reload Application
-          </button>
-        </div>
-      }
-    >
+    <ErrorBoundary>
       <div 
-        className="flex flex-col items-center w-full max-w-2xl mx-auto space-y-6" 
+        className="flex flex-col items-center w-full max-w-2xl mx-auto space-y-6 px-2 sm:px-4 md:px-0" 
         data-testid="pdf-uploader" 
         role="region" 
         aria-label="PDF file upload and processing area"
         tabIndex={0}
+        ref={uploaderRef}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
-        <div
-          {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
-            ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-blue-400'}`}
-        >
-          <input {...getInputProps()} />
-          {isDragActive ? (
-            <p className="text-blue-500">Drop the files here...</p>
-          ) : (
-            <p>Drag and drop PDF files here, or click to select files</p>
-          )}
-        </div>
+        <DragDropArea onFilesDrop={handleFilesDrop} isLoading={isLoading} />
 
+        {/* Only show error for processing, not for file drop (handled by DragDropArea) */}
         {error && (
           <div 
             className="w-full max-w-xl text-center p-3 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 rounded-lg"
@@ -277,46 +123,60 @@ export default function PdfUploader() {
         )}
 
         {uploadedFiles.length > 0 && (
-          <div 
+          <div
             className="w-full max-w-xl bg-white dark:bg-gray-800 rounded-lg shadow p-4"
             role="region"
             aria-labelledby="selected-files-heading"
+            data-testid="selected-files-section"
           >
-            <h2 
-              id="selected-files-heading" 
+            <h2
+              id="selected-files-heading"
               className="text-lg font-medium mb-2 flex items-center justify-between text-gray-900 dark:text-gray-100"
+              data-testid="selected-files-title"
             >
               Selected Files ({uploadedFiles.length})
-              {!isOnline && (
+              {!navigator.onLine && (
                 <span className="text-xs font-normal px-2 py-1 bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-200 rounded-full">
                   Offline Mode
                 </span>
               )}
             </h2>
             <ul 
-              className="max-h-40 overflow-y-auto" 
+              className="max-h-40 overflow-y-auto min-w-[220px] sm:min-w-[320px] md:min-w-[400px]"
               aria-label="List of selected PDF files"
+              data-testid="selected-files-list"
             >
               {uploadedFiles.map((file, index) => (
                 <li
                   key={index}
-                  className="text-sm py-1 flex justify-between items-center text-gray-700 dark:text-gray-300"
+                  className="text-sm py-1 flex justify-between items-center text-gray-700 dark:text-gray-300 min-w-0"
+                  data-testid="selected-file-item"
                 >
-                  <span className="truncate max-w-[300px] pr-4">{file.name}</span>
-                  <span className="text-xs text-gray-600 dark:text-gray-400" aria-label={`Size: ${(file.size / 1024).toFixed(1)} kilobytes`}>
+                  <span className="truncate max-w-[120px] sm:max-w-[200px] md:max-w-[300px] pr-4" data-testid="selected-file-name">{file.name}</span>
+                  <span className="text-xs text-gray-600 dark:text-gray-400 mr-2" aria-label={`Size: ${(file.size / 1024).toFixed(1)} kilobytes`} data-testid="selected-file-size">
                     {(file.size / 1024).toFixed(1)} KB
                   </span>
+                  <button
+                    className="ml-2 px-2 py-1 text-xs bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-200 rounded hover:bg-red-200 dark:hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-500"
+                    aria-label={`Remove ${file.name}`}
+                    onClick={() => {
+                      setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+                    }}
+                    disabled={isLoading}
+                  >
+                    Remove
+                  </button>
                 </li>
               ))}
             </ul>
-
-            <div className="flex mt-4 space-x-3">
+            <div className="flex mt-4 space-x-3 flex-col sm:flex-row">
               <button
                 onClick={handleProcessFiles}
                 disabled={isLoading}
-                className={`flex-1 ${!isOnline ? 'bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400' : 'bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400'} text-white py-2 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+                className={`flex-1 ${!navigator.onLine ? 'bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400' : 'bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400'} text-white py-2 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mb-2 sm:mb-0`}
                 aria-label="Split PDF files into individual pages"
                 aria-busy={isLoading}
+                data-testid="split-button"
               >
                 {isLoading ? (
                   <>
@@ -332,58 +192,14 @@ export default function PdfUploader() {
                   "Split PDFs"
                 )}
               </button>
-
               <button
                 onClick={clearFiles}
                 disabled={isLoading}
-                className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 py-2 px-4 rounded-md transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                className="flex-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 py-2 px-4 rounded-md transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                 aria-label="Clear selected files"
+                data-testid="clear-button"
               >
                 Clear
-              </button>
-            </div>
-          </div>
-        )}
-
-        {storedFiles.length > 0 && isOnline && (
-          <div 
-            className="w-full max-w-xl bg-white dark:bg-gray-800 rounded-lg shadow p-4 border border-green-300 dark:border-green-700"
-            role="region"
-            aria-labelledby="saved-files-heading"
-          >
-            <h2 
-              id="saved-files-heading" 
-              className="text-lg font-medium mb-2 flex items-center justify-between text-gray-900 dark:text-gray-100"
-            >
-              <span>Previously Saved Files ({storedFiles.length})</span>
-              <span className="text-xs font-normal px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200 rounded-full">
-                Available Offline
-              </span>
-            </h2>
-            <ul 
-              className="max-h-32 overflow-y-auto" 
-              aria-label="List of saved PDF files"
-            >
-              {storedFiles.map((fileData, index) => (
-                <li
-                  key={index}
-                  className="text-sm py-1 flex justify-between items-center text-gray-700 dark:text-gray-300"
-                >
-                  <span className="truncate max-w-[300px] pr-4">{fileData.name}</span>
-                  <span className="text-xs text-gray-600 dark:text-gray-400">
-                    {(fileData.size / 1024).toFixed(1)} KB
-                  </span>
-                </li>
-              ))}
-            </ul>
-
-            <div className="flex mt-4 justify-end">
-              <button
-                onClick={() => OfflineStorage.clearAllOperations()}
-                className="text-xs text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 rounded"
-                aria-label="Clear offline storage"
-              >
-                Clear Storage
               </button>
             </div>
           </div>
@@ -392,7 +208,7 @@ export default function PdfUploader() {
         {processingStatus && (
           <div 
             className={`w-full max-w-xl text-center p-3 ${
-              !isOnline ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200'
+              !navigator.onLine ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200'
             } rounded-lg`}
             aria-live="polite"
             role="status"

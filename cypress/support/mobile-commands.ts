@@ -72,9 +72,15 @@ Cypress.Commands.add('doubleTap', { prevSubject: 'element' }, (subject) => {
 
 // Add custom command for mobile file upload
 Cypress.Commands.add('mobileFileUpload', { prevSubject: 'element' }, (subject, file) => {
+  // Convert File to FileReference if needed
+  const fileArg = Array.isArray(file) || (file && typeof file === 'object' && 'contents' in file) ? file : {
+    contents: file,
+    fileName: file.name,
+    mimeType: file.type
+  };
   return cy.wrap(subject)
     .find('input[type="file"]')
-    .selectFile(file, { force: true });
+    .selectFile(fileArg, { force: true });
 });
 
 // Add custom command for checking touch target size
@@ -95,9 +101,13 @@ Cypress.Commands.add('hasProperSpacing', { prevSubject: 'element' }, (subject, m
   return cy.wrap(subject).then(($el) => {
     const nextEl = $el.next();
     if (nextEl.length) {
-      const spacing = nextEl.offset()?.top - ($el.offset()?.top ?? 0);
-      expect(spacing).to.be.greaterThan(minSpacing - 1);
+      const nextOffset = nextEl.offset();
+      const elOffset = $el.offset();
+      if (nextOffset && elOffset) {
+        const spacing = nextOffset.top - elOffset.top;
+        expect(spacing).to.be.greaterThan(minSpacing - 1);
+      }
     }
     return cy.wrap($el);
   });
-}); 
+});

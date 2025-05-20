@@ -1,3 +1,5 @@
+const TerserPlugin = require('terser-webpack-plugin');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -8,7 +10,20 @@ const nextConfig = {
       headers: [
         {
           key: 'Content-Security-Policy',
-          value: "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; connect-src 'self'; block-all-mixed-content; upgrade-insecure-requests"
+          value: `
+            default-src 'self';
+            script-src 'self' 'unsafe-inline' 'unsafe-eval';
+            style-src 'self' 'unsafe-inline';
+            img-src 'self' data: blob:;
+            font-src 'self' data:;
+            object-src 'none';
+            base-uri 'self';
+            form-action 'self';
+            frame-ancestors 'none';
+            connect-src 'self';
+            block-all-mixed-content;
+            upgrade-insecure-requests;
+          `.replace(/\s{2,}/g, ' ').trim(),
         },
         {
           key: 'X-Content-Type-Options',
@@ -55,4 +70,4 @@ const nextConfig = {
   }
 };
 
-module.exports = nextConfig; 
+module.exports = nextConfig;

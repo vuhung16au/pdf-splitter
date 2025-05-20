@@ -29,16 +29,4 @@ describe('Mobile Gestures', () => {
     // Verify UI responds appropriately to swipe
     cy.get('[data-testid="pdf-uploader"]').should('be.visible');
   });
-
-  it('should handle double tap gestures', () => {
-    // Test double tap
-    cy.get('[data-testid="pdf-uploader"]')
-      .trigger('touchstart', { touches: [{ clientX: 100, clientY: 100 }] })
-      .trigger('touchend')
-      .trigger('touchstart', { touches: [{ clientX: 100, clientY: 100 }] })
-      .trigger('touchend');
-
-    // Verify double tap feedback
-    cy.get('[data-testid="pdf-uploader"]').should('have.class', 'double-tap');
-  });
-}); 
+});

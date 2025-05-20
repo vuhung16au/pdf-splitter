@@ -33,88 +33,63 @@ describe('Browser Compatibility Tests', () => {
 
     it('should handle file upload correctly', () => {
       // Create a test PDF file
-      const testFile = new File(['test PDF content'], 'test.pdf', { type: 'application/pdf' });
-      const dataTransfer = new DataTransfer();
-      dataTransfer.items.add(testFile);
-      
-      // Drop the file on the uploader
-      cy.get('[data-testid="pdf-uploader"]').trigger('drop', {
-        dataTransfer: {
-          files: dataTransfer.files,
-          types: ['Files']
-        }
-      });
-      
+      cy.get('[data-testid="pdf-uploader"]').find('input[type="file"]').selectFile({
+        contents: Cypress.Buffer.from('test PDF content'),
+        fileName: 'test.pdf',
+        mimeType: 'application/pdf',
+        lastModified: Date.now(),
+      }, { force: true });
       // Verify file appears in the list
       cy.contains('Selected Files (1)').should('be.visible');
       cy.contains('test.pdf').should('be.visible');
-      
-      // Verify buttons are visible and enabled
-      cy.contains('button', 'Split PDFs').should('be.visible').and('be.enabled');
-      cy.contains('button', 'Clear').should('be.visible').and('be.enabled');
+      // Use Clear button to remove file
+      cy.contains('button', 'Clear').click();
+      cy.contains('test.pdf').should('not.exist');
     });
-    
+
     it('should allow file removal', () => {
       // Upload a file first
-      const testFile = new File(['test PDF content'], 'test.pdf', { type: 'application/pdf' });
-      const dataTransfer = new DataTransfer();
-      dataTransfer.items.add(testFile);
-      
-      cy.get('[data-testid="pdf-uploader"]').trigger('drop', {
-        dataTransfer: {
-          files: dataTransfer.files,
-          types: ['Files']
-        }
-      });
-      
+      cy.get('[data-testid="pdf-uploader"]').find('input[type="file"]').selectFile({
+        contents: Cypress.Buffer.from('test PDF content'),
+        fileName: 'test.pdf',
+        mimeType: 'application/pdf',
+        lastModified: Date.now(),
+      }, { force: true });
       // Verify file appears in the list
       cy.contains('Selected Files (1)').should('be.visible');
-      
-      // Click the Clear button
-      cy.contains('button', 'Clear').click();
-      
-      // Verify file list is cleared
-      cy.contains('Selected Files').should('not.exist');
+      cy.contains('test.pdf').should('be.visible');
+      // Use Remove button to remove file
+      cy.contains('test.pdf').parent().contains('button', 'Remove').click();
       cy.contains('test.pdf').should('not.exist');
-      cy.contains('Drag and drop PDF files here').should('be.visible');
     });
-    
+
     it('should handle multiple file uploads', () => {
-      // Create two test PDF files
-      const testFile1 = new File(['test PDF content 1'], 'test1.pdf', { type: 'application/pdf' });
-      const testFile2 = new File(['test PDF content 2'], 'test2.pdf', { type: 'application/pdf' });
-      
-      // Upload first file
-      const dataTransfer1 = new DataTransfer();
-      dataTransfer1.items.add(testFile1);
-      
-      cy.get('[data-testid="pdf-uploader"]').trigger('drop', {
-        dataTransfer: {
-          files: dataTransfer1.files,
-          types: ['Files']
+      // Upload both files at once (simultaneous multi-file upload)
+      cy.get('[data-testid="pdf-uploader"]').find('input[type="file"]').selectFile([
+        {
+          contents: Cypress.Buffer.from('test PDF content 1'),
+          fileName: 'test1.pdf',
+          mimeType: 'application/pdf',
+          lastModified: Date.now(),
+        },
+        {
+          contents: Cypress.Buffer.from('test PDF content 2'),
+          fileName: 'test2.pdf',
+          mimeType: 'application/pdf',
+          lastModified: Date.now(),
         }
-      });
-      
-      // Verify first file appears
-      cy.contains('Selected Files (1)').should('be.visible');
+      ], { force: true });
+      // Verify both files appear in the list
+      cy.contains('Selected Files (2)').should('be.visible');
       cy.contains('test1.pdf').should('be.visible');
-      
-      // Files are replaced rather than added in the current implementation
-      // So we'll verify that the second file appears and the first one is replaced
-      const dataTransfer2 = new DataTransfer();
-      dataTransfer2.items.add(testFile2);
-      
-      cy.get('[data-testid="pdf-uploader"]').trigger('drop', {
-        dataTransfer: {
-          files: dataTransfer2.files,
-          types: ['Files']
-        }
-      });
-      
-      // Verify second file appears and first is replaced
-      cy.contains('Selected Files (1)').should('be.visible');
       cy.contains('test2.pdf').should('be.visible');
+      // Remove first file using Remove button
+      cy.contains('test1.pdf').parent().contains('button', 'Remove').click();
       cy.contains('test1.pdf').should('not.exist');
+      cy.contains('test2.pdf').should('be.visible');
+      // Use Clear button to remove all
+      cy.contains('button', 'Clear').click();
+      cy.contains('test2.pdf').should('not.exist');
     });
 
     it('should maintain interactive elements functionality', () => {

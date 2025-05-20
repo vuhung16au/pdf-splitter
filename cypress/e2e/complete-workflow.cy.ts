@@ -16,24 +16,15 @@ describe('PDF Splitting Complete Workflow', () => {
 
   it('should upload a PDF file, split it, and download the result', () => {
     // Step 1: Upload a PDF file
-    // Using the sample.pdf file from fixtures
-    cy.fixture('sample.pdf', 'binary')
-      .then(Cypress.Blob.binaryStringToBlob)
-      .then(blob => {
-        const testFile = new File([blob], 'sample.pdf', { type: 'application/pdf' });
-        const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(testFile);
-        
-        cy.get('[data-testid="pdf-uploader"]').trigger('drop', { 
-          dataTransfer: {
-            files: dataTransfer.files,
-            types: ['Files']
-          }
-        });
-      });
+    cy.get('[data-testid="pdf-uploader"]').find('input[type="file"]').selectFile({
+      contents: Cypress.Buffer.from('test PDF content'),
+      fileName: 'sample.pdf',
+      mimeType: 'application/pdf',
+      lastModified: Date.now(),
+    }, { force: true });
     
     // Verify the PDF was uploaded
-    cy.contains('Selected Files').should('be.visible');
+    cy.contains('Selected Files (1)').should('be.visible');
     cy.contains('sample.pdf').should('be.visible');
     
     // Step 2: Split the PDF
@@ -44,22 +35,23 @@ describe('PDF Splitting Complete Workflow', () => {
       
     // Even if we can't see the exact message, test will pass if the app doesn't crash
     cy.get('[data-testid="pdf-uploader"]').should('exist');
+    
+    // Use Clear button to remove file
+    cy.contains('button', 'Clear').click();
+    cy.contains('sample.pdf').should('not.exist');
   });
 
   it('should handle errors when trying to split invalid PDFs', () => {
     // Create an invalid PDF (just a text file with PDF extension)
-    const invalidFile = new File(['Not a real PDF file'], 'fake.pdf', { type: 'application/pdf' });
-    
-    // Upload the invalid file
-    cy.get('[data-testid="pdf-uploader"]').trigger('drop', {
-      dataTransfer: {
-        files: [invalidFile],
-        types: ['Files']
-      }
-    });
+    cy.get('[data-testid="pdf-uploader"]').find('input[type="file"]').selectFile({
+      contents: Cypress.Buffer.from('Not a real PDF file'),
+      fileName: 'fake.pdf',
+      mimeType: 'application/pdf',
+      lastModified: Date.now(),
+    }, { force: true });
     
     // Verify file was uploaded
-    cy.contains('Selected Files').should('be.visible');
+    cy.contains('Selected Files (1)').should('be.visible');
     cy.contains('fake.pdf').should('be.visible');
     
     // Try to split
@@ -69,9 +61,9 @@ describe('PDF Splitting Complete Workflow', () => {
     cy.wait(1000);
     cy.get('[data-testid="pdf-uploader"]').should('exist');
     
-    // The test passes as long as the app doesn't crash
-    // Since this is a fake PDF, the app might fail during processing
-    // but we just want to ensure it doesn't completely crash
+    // Use Clear button to remove file
+    cy.contains('button', 'Clear').click();
+    cy.contains('fake.pdf').should('not.exist');
   });
   
   it('should allow splitting multiple PDFs at once', () => {

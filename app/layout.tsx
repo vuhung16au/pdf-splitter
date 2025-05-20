@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { NetworkProvider } from "./context/NetworkContext";
-import OfflineNotification from "./components/OfflineNotification";
-import ServiceWorkerRegistration from "./components/ServiceWorkerRegistration";
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -23,12 +21,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} antialiased`}>
-        <NetworkProvider>
-          <OfflineNotification />
-          <ServiceWorkerRegistration />
-          {children}
-        </NetworkProvider>
+      <body className={`${inter.variable} font-sans antialiased bg-white dark:bg-gray-950`}>
+        {children}
       </body>
     </html>
   );

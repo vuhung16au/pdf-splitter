@@ -1,3 +1,5 @@
+export {};
+
 /**
  * Custom commands for network throttling and testing
  */
@@ -54,4 +56,4 @@ Cypress.Commands.add('throttle', (condition: 'slow3G' | 'fast3G' | 'regular4G') 
   });
   
   cy.log(`🌐 Network throttled to: ${condition}`);
-}); 
+});

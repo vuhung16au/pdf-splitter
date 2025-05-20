@@ -2,7 +2,6 @@
 
 import { useState, useRef } from "react";
 import Image from "next/image";
-import { useNetwork } from "../context/NetworkContext";
 
 // Set maximum file size to 100MB - same as defined in PdfUploader
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
@@ -15,8 +14,9 @@ interface DragDropAreaProps {
 export default function DragDropArea({ onFilesDrop, isLoading }: DragDropAreaProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [dragError, setDragError] = useState<string | null>(null);
+  const [lastTap, setLastTap] = useState<number | null>(null);
+  const doubleTapTimeout = useRef<NodeJS.Timeout | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { isOnline } = useNetwork();
 
   const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -40,29 +40,33 @@ export default function DragDropArea({ onFilesDrop, isLoading }: DragDropAreaPro
   };
 
   const validateFiles = (files: File[]): File[] => {
-    // Filter for PDFs and check sizes
+    // Filter for PDFs
     const pdfFiles = files.filter(file => file.type === "application/pdf");
-    
-    // Show an error if non-PDF files were selected
-    if (pdfFiles.length < files.length) {
-      setDragError("Some files were not PDFs and were ignored");
-    }
-    
-    // If no valid files, show error
+
+    // Check for non-PDF files
+    const hasNonPdf = pdfFiles.length < files.length;
+
+    // Check for oversized PDFs
+    const oversizedFiles = pdfFiles.filter(file => file.size > MAX_FILE_SIZE);
+
+    // If no valid PDFs
     if (pdfFiles.length === 0) {
       setDragError("Please select PDF files only");
       return [];
     }
-    
-    // Filter out files that are too large
-    const validFiles = pdfFiles.filter(file => file.size <= MAX_FILE_SIZE);
-    
-    // Show error if some files were too large
-    if (validFiles.length < pdfFiles.length) {
-      setDragError("Some files exceeded the 100MB size limit and were ignored");
+
+    // Show error if any PDF is too large (priority)
+    if (oversizedFiles.length > 0) {
+      setDragError("File size exceeds limit");
+      return [];
     }
-    
-    return validFiles;
+
+    // Show error if some files were not PDFs
+    if (hasNonPdf) {
+      setDragError("Some files were not PDFs and were ignored");
+    }
+
+    return pdfFiles;
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -110,33 +114,46 @@ export default function DragDropArea({ onFilesDrop, isLoading }: DragDropAreaPro
     }
   };
 
+  // Double tap handler for mobile gesture
+  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    const now = Date.now();
+    if (lastTap && now - lastTap < 300) {
+      // Double tap detected
+      setLastTap(null);
+      if (doubleTapTimeout.current) {
+        clearTimeout(doubleTapTimeout.current);
+        doubleTapTimeout.current = null;
+      }
+      // TODO: Replace this with your desired double tap action
+      window.alert("Double tap detected!");
+      return;
+    }
+    setLastTap(now);
+    if (doubleTapTimeout.current) {
+      clearTimeout(doubleTapTimeout.current);
+    }
+    doubleTapTimeout.current = setTimeout(() => {
+      setLastTap(null);
+    }, 350);
+  };
+
   return (
     <div
-      className={`w-full border-dashed rounded-lg p-6 mb-8 text-center flex flex-col items-center justify-center transition-all ${
+      className={`w-full max-w-xs sm:max-w-md md:max-w-xl border-dashed rounded-lg p-4 sm:p-6 mb-8 text-center flex flex-col items-center justify-center transition-all ${
         isDragging
           ? "border-blue-500 bg-blue-100 dark:bg-blue-900/30 border-4"
-          : !isOnline 
-            ? "border-orange-500 bg-orange-100 dark:bg-orange-900/30 border-2" 
-            : "border-gray-400 dark:border-gray-600 border-2"
+          : "border-gray-400 dark:border-gray-600 border-2"
       } ${isLoading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
       onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       onClick={handleButtonClick}
+      onTouchEnd={handleTouchEnd}
       data-testid="dragdrop-area"
       role="region"
       aria-label="PDF file upload area"
     >
-      {!isOnline && (
-        <div className="absolute top-4 right-4">
-          <span className="px-2 py-1 text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 rounded-full border border-orange-300 dark:border-orange-700 flex items-center space-x-1">
-            <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
-            <span>Offline Mode</span>
-          </span>
-        </div>
-      )}
-      
       {dragError && (
         <div 
           className="text-red-800 dark:text-red-200 mb-4" 

@@ -1,13 +1,10 @@
 import DragDropArea from '../../app/components/DragDropArea';
 
 describe('DragDropArea Component', () => {
-  // Define stub outside to make it accessible in all test cases
   let onFilesDropSpy: any;
-  
+
   beforeEach(() => {
-    // Create a stub for onFilesDrop
     onFilesDropSpy = cy.stub().as('onFilesDropSpy');
-    
     cy.mount(
       <DragDropArea 
         onFilesDrop={onFilesDropSpy}
@@ -17,68 +14,55 @@ describe('DragDropArea Component', () => {
   });
 
   it('should render drag and drop area', () => {
+    cy.get('[data-testid="dragdrop-area"]').should('exist');
     cy.contains('Drag and drop PDF files here').should('be.visible');
     cy.contains('or click to select PDF files').should('be.visible');
   });
 
   it('should change styling on drag over', () => {
-    // Need to target the specific drag drop area div that has onDragEnter handler
-    cy.get('div').contains('Drag and drop PDF files here').parent().parent()
+    cy.get('[data-testid="dragdrop-area"]')
       .trigger('dragenter')
-      .should('have.class', 'border-blue-500');
+      .should('have.class', 'border-blue-500')
+      .and('have.class', 'bg-blue-100');
   });
 
   it('should handle file drops with PDF files', () => {
-    // Create a fake PDF file
     const testFile = new File(['test PDF content'], 'test.pdf', { type: 'application/pdf' });
-    
-    // Simulate file drop
-    cy.get('div').first().trigger('drop', {
+    cy.get('[data-testid="dragdrop-area"]').trigger('drop', {
       dataTransfer: {
         files: [testFile],
         types: ['Files'],
       },
     });
-
-    // Check if onFilesDrop was called with the correct file
     cy.get('@onFilesDropSpy').should('have.been.calledOnce');
   });
 
-  it('should show error for non-PDF files', () => {
-    // Create a fake non-PDF file
-    const testFile = new File(['test text content'], 'test.txt', { type: 'text/plain' });
-    
-    // Simulate file drop
-    cy.get('div').first().trigger('drop', {
+  it('should show error if some files are not PDFs', () => {
+    const pdfFile = new File(['test PDF content'], 'test.pdf', { type: 'application/pdf' });
+    const txtFile = new File(['test text content'], 'test.txt', { type: 'text/plain' });
+    cy.get('[data-testid="dragdrop-area"]').trigger('drop', {
       dataTransfer: {
-        files: [testFile],
+        files: [pdfFile, txtFile],
         types: ['Files'],
       },
     });
-
-    // Check for error message
-    cy.contains('Please select PDF files only').should('be.visible');
+    cy.contains('Some files were not PDFs and were ignored').should('be.visible');
   });
 
   it('should be disabled when loading', () => {
-    // Remount with loading state
     cy.mount(
       <DragDropArea 
         onFilesDrop={onFilesDropSpy} 
         isLoading={true} 
       />
     );
-
-    // Check if it shows processing state
+    cy.get('[data-testid="dragdrop-area"]').should('have.class', 'opacity-50').and('have.class', 'cursor-not-allowed');
     cy.contains('Processing...').should('be.visible');
-    cy.contains('Please wait while we split your PDFs').should('be.visible');
-    cy.get('div').first().should('have.class', 'opacity-70');
-    cy.get('div').first().should('have.class', 'cursor-not-allowed');
   });
 
-  it('should open file dialog when clicked', () => {
+  it('should open file dialog when clicking the span', () => {
     const inputSpy = cy.spy(HTMLInputElement.prototype, 'click').as('inputSpy');
-    cy.get('div').first().click();
+    cy.get('[data-testid="dragdrop-area"] span').contains('click to select PDF files').click();
     cy.get('@inputSpy').should('have.been.called');
   });
 });

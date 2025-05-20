@@ -17,16 +17,11 @@ Cypress.Commands.add('login', (email, password) => {
 });
 
 // Add custom command for keyboard tab navigation testing
-Cypress.Commands.add('tab', { prevSubject: 'optional' }, (subject) => {
-  const focusable = 'a[href]:not([disabled]), button:not([disabled]), input:not([disabled]), [tabindex]:not([disabled]):not([tabindex="-1"])';
-  
-  if (subject) {
-    cy.wrap(subject).trigger('keydown', { keyCode: 9, which: 9, key: 'Tab' });
-  }
-  
+Cypress.Commands.add('tab', { prevSubject: ['element'] }, (subject: JQuery<HTMLElement>) => {
+  subject.trigger('keydown', { keyCode: 9, which: 9, key: 'Tab' });
   return cy.document().then(document => {
-    const activeElement = document.activeElement;
-    
-    return cy.wrap(activeElement);
+    const activeElement = document.activeElement as Element;
+    if (!activeElement) throw new Error('No active element found');
+    return activeElement;
   });
-});  
+});

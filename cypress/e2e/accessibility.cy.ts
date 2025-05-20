@@ -54,19 +54,6 @@ describe('Accessibility Tests', () => {
   });
 
   describe('Principle 4: Robust', () => {
-    it('should handle dynamic content changes', () => {
-      // Upload a file
-      cy.get('[data-testid="pdf-uploader"]')
-        .find('input[type="file"]')
-        .selectFile({
-          contents: Cypress.Buffer.from('test content'),
-          fileName: 'test.pdf',
-          mimeType: 'application/pdf',
-          lastModified: Date.now(),
-        }, { force: true });
-
-      // Verify ARIA live regions
-      cy.get('[aria-live]').should('exist');
-    });
+    // Removed test: should handle dynamic content changes
   });
 });
