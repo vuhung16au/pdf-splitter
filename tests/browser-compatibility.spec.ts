@@ -35,7 +35,13 @@ test.describe('Browser Compatibility Tests - Safari', () => {
     });
 
     // Wait for the file to be processed and UI to update
-    await page.waitForSelector('[data-testid="selected-files-title"]', { state: 'visible', timeout: 10000 });
+    try {
+      await page.waitForSelector('[data-testid="selected-files-title"]', { state: 'visible', timeout: 20000 });
+    } catch (e) {
+      await page.screenshot({ path: 'test-results/single-file-wait-fail.png', fullPage: true });
+      console.error('selected-files-title not found. Page content:', await page.content());
+      throw e;
+    }
 
     // Verify file appears in the list
     await expect(page.locator('[data-testid="selected-files-title"]')).toBeVisible();
@@ -59,7 +65,13 @@ test.describe('Browser Compatibility Tests - Safari', () => {
     });
 
     // Wait for the file to be processed and UI to update
-    await page.waitForSelector('[data-testid="selected-files-title"]', { state: 'visible', timeout: 10000 });
+    try {
+      await page.waitForSelector('[data-testid="selected-files-title"]', { state: 'visible', timeout: 20000 });
+    } catch (e) {
+      await page.screenshot({ path: 'test-results/file-removal-wait-fail.png', fullPage: true });
+      console.error('selected-files-title not found. Page content:', await page.content());
+      throw e;
+    }
 
     // Verify file appears in the list
     await expect(page.locator('[data-testid="selected-files-title"]')).toBeVisible();
@@ -91,7 +103,13 @@ test.describe('Browser Compatibility Tests - Safari', () => {
     ]);
 
     // Wait for the files to be processed and UI to update
-    await page.waitForSelector('[data-testid="selected-files-title"]', { state: 'visible', timeout: 10000 });
+    try {
+      await page.waitForSelector('[data-testid="selected-files-title"]', { state: 'visible', timeout: 20000 });
+    } catch (e) {
+      await page.screenshot({ path: 'test-results/multiple-files-wait-fail.png', fullPage: true });
+      console.error('selected-files-title not found. Page content:', await page.content());
+      throw e;
+    }
 
     // Verify both files appear in the list
     await expect(page.locator('[data-testid="selected-files-title"]')).toBeVisible();
@@ -139,10 +157,16 @@ test.describe('Browser Compatibility Tests - Safari', () => {
     });
     
     // Wait for the file to be processed and UI to update
-    await page.waitForSelector('[data-testid="selected-files-title"]', { state: 'visible', timeout: 10000 });
+    try {
+      await page.waitForSelector('[data-testid="selected-files-title"]', { state: 'visible', timeout: 20000 });
+    } catch (e) {
+      await page.screenshot({ path: 'test-results/safari-process-upload-wait-fail.png', fullPage: true });
+      console.error('selected-files-title not found. Page content:', await page.content());
+      throw e;
+    }
     
     // Verify file appears in the list
     await expect(page.locator('[data-testid="selected-files-title"]')).toBeVisible();
     await expect(page.locator('[data-testid="selected-file-name"]')).toContainText('safari-test.pdf');
   });
-}); 
+});

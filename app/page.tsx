@@ -30,6 +30,13 @@ export default function Home() {
         willChange: 'scroll-position', // Hint for smooth scrolling
       }}
     >
+      {/* Safari support notice */}
+      <div className="w-full max-w-2xl mx-auto mt-4 mb-2">
+        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded" role="alert">
+          <strong>Notice (21 May 2025):</strong> Our PDF Splitter doesn't support Safari.
+        </div>
+      </div>
+      
       <header className="w-full max-w-2xl text-center mt-6 sm:mt-8">
         <h1 className="text-xl sm:text-4xl font-bold mb-2 text-gray-900 dark:text-gray-100">PDF Splitter</h1>
         <p className="text-xs sm:text-base text-gray-700 dark:text-gray-300">

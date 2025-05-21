@@ -1,5 +1,7 @@
 # PDF Splitter
 
+> **Notice (21 May 2025):** Our PDF Splitter doesn't support Safari.
+
 A web application that splits multi-paged PDF files into single-paged PDF files and packages them as a ZIP archive for download.
 
 # Screenshots
