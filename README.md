@@ -1,14 +1,8 @@
 # PDF Splitter
 
-> **Notice (21 May 2025):** Our PDF Splitter doesn't support Safari.
-
 A web application that splits multi-paged PDF files into single-paged PDF files and packages them as a ZIP archive for download.
 
-# Screenshots
-
-![PDF Splitter on Vercel](images/vercel-screenshot.png)
-![Responsive UI](images/responsive-ui.png)
-![Browser Compatibility](images/browser-compatibility.png)
+> **Notice (21 May 2025):** Our PDF Splitter doesn't support Safari.
 
 ## Features
 
@@ -25,30 +19,29 @@ A web application that splits multi-paged PDF files into single-paged PDF files 
 - **Detailed error messages** for user guidance
 - **Fallback UI** for various error scenarios
 
-## File Structure
-
-- `page.tsx` - Main page with the UI layout
-- `PdfUploader.tsx` - Component for handling file uploads and processing
-- `DragDropArea.tsx` - Component for drag and drop functionality
-- `pdfUtils.ts` - Utility functions for PDF splitting using pdf-lib
-- `ErrorBoundary.tsx` - Custom component for catching and handling UI errors
-- `error.tsx` - Global error handler for Next.js application
-- `not-found.tsx` - Custom 404 page for handling non-existent routes
-
-## Libraries Used
-
-- **pdf-lib**: For PDF manipulation
-- **file-saver**: For downloading the generated files
-- **jszip**: For creating ZIP archives
-- **next.js & react**: For the application framework
-- **tailwindcss**: For styling
-
 ## Usage
 
-1. Upload one or more PDF files by dragging them into the upload area or clicking to browse (max file size: 100MB per file)
-2. Click "Split PDFs" to process your files
-3. Each page of your PDFs will be extracted as a separate PDF file with the naming format "originalname-XX.pdf"
-4. The ZIP file "pdf-splitted.zip" containing all individual PDFs will be downloaded automatically
+1. Upload one or more PDF files by dragging them into the upload area or clicking to browse (max file size: 100MB per file).
+2. Review the list of selected files. You can **remove** individual files or use the **Clear All** button to remove all files before processing.
+3. Click **Split PDFs** to process your files.
+4. Each page of your PDFs will be extracted as a separate PDF file with the naming format `originalname-XX.pdf`.
+5. The ZIP file `pdf-splitted.zip` containing all individual PDFs will be downloaded automatically.
+6. If an error occurs (e.g., invalid/corrupted PDF, file too large, unsupported browser), a detailed error message will be shown and you can retry or adjust your files.
+7. The UI supports drag-and-drop, dark mode, responsive layout, and robust error handling for a smooth experience.
+
+## Supported and Tested Browsers
+
+PDF Splitter is actively tested and supported in the following browsers:
+
+- **Google Chrome** (latest stable)
+- **Microsoft Edge** (latest stable)
+- **Mozilla Firefox** (latest stable)
+- **Safari**: Not supported (see notice above)
+- **WebKit** (via Playwright automation)
+
+> **Note:** While the app works best in Chrome and Edge, Firefox is also supported but may require additional handling for some PDF operations. Safari is not supported due to known compatibility issues.
+
+Automated tests (Cypress and Playwright) are run across Chrome, Edge, Firefox, and WebKit to ensure cross-browser compatibility.
 
 ## Getting Started
 
@@ -82,6 +75,58 @@ yarn install
 npm run dev
 ```
 
+## File Structure
+
+### Web Application (app/)
+
+- `page.tsx` - Main page with the UI layout
+- `PdfUploader.tsx` - Component for handling file uploads and processing
+- `DragDropArea.tsx` - Component for drag and drop functionality
+- `pdfUtils.ts` - Utility functions for PDF splitting using pdf-lib
+- `ErrorBoundary.tsx` - Custom component for catching and handling UI errors
+- `error.tsx` - Global error handler for Next.js application
+- `not-found.tsx` - Custom 404 page for handling non-existent routes
+- `layout.tsx` - Application layout and global styles
+- `globals.css` - Global CSS (Tailwind)
+- `api/` - API routes (e.g., PDF splitting, rate limiting)
+- `components/` - Shared React components
+- `lib/` - Utility libraries (validation, offline storage, etc.)
+
+### Cypress Folder (cypress/)
+
+- `component/` - Component tests (e.g., `DragDropArea.cy.tsx`, `PdfUploader.cy.tsx`)
+- `e2e/` - End-to-end tests (e.g., `complete-workflow.cy.ts`, `browser-compatibility.cy.ts`)
+- `fixtures/` - Test data files (e.g., `sample.pdf`, `a11y-test.pdf`)
+- `support/` - Custom commands and support files
+- `README.md` - Cypress-specific documentation
+- `BROWSER_TESTING.md` - Browser testing notes
+
+### Playwright Folder (tests/)
+
+- `browser-compatibility.spec.ts` - Cross-browser compatibility tests
+- `README.md` - Playwright-specific documentation
+- Additional Playwright test files can be added here for E2E and browser automation
+
+## Libraries Used
+
+- **pdf-lib**: For PDF manipulation
+- **file-saver**: For downloading the generated files
+- **jszip**: For creating ZIP archives
+- **next.js**: Application framework (v14.1.0)
+- **react**: UI library (v18.2.0)
+- **tailwindcss**: Utility-first CSS framework (v3.4.17)
+- **typescript**: Type-safe JavaScript (v5)
+- **cypress**: End-to-end and component testing (v14.3.3)
+- **@playwright/test**: Cross-browser E2E testing (v1.52.0)
+- **axe-core & cypress-axe**: Accessibility testing
+- **cypress-file-upload**: File upload testing utilities
+- **jszip**: ZIP file creation
+- **autoprefixer & postcss**: CSS tooling
+- **start-server-and-test**: For test automation scripts
+- **@testing-library/cypress**: Cypress Testing Library for better test practices
+- **pdfjs-dist**: PDF rendering utilities
+- **@types/** packages: TypeScript type definitions for dependencies
+
 ## Technologies
 
 - Next.js 15.3.2
@@ -92,6 +137,7 @@ npm run dev
 - JSZip 3.10.1
 - File Saver 2.0.5
 - Cypress 14.3.3 for testing
+- Playwright 1.x for browser automation and E2E testing
 
 ## Error Handling
 
@@ -104,6 +150,38 @@ The application implements comprehensive error handling to ensure a smooth user 
 - **API Error Handling**: Proper error responses for API routes with appropriate HTTP status codes
 - **Global Error Handling**: App-wide error handling for uncaught exceptions
 - **Custom 404 Page**: User-friendly page for non-existent routes
+
+## Bash Shell Scripts
+
+This project includes several bash (`.sh`) scripts to automate testing and development workflows. These scripts are designed for macOS and Linux environments using the `zsh` or `bash` shell.
+
+### Available Scripts
+
+- `run-tests.sh` — Run all major test suites (Cypress and Playwright) in sequence.
+- `run-performance-tests.sh` — Run Cypress performance tests across browsers or environments. Accepts browser and target arguments (e.g., `./run-performance-tests.sh chrome production`).
+- `run-a11y-tests.sh` — Run accessibility (a11y) tests using Cypress.
+- `run-a11y-cross-browser.sh` — Run accessibility tests across all supported browsers.
+- `run-offline-tests.sh` — Run offline functionality tests to verify PWA/offline support.
+
+### Usage
+
+Make sure the scripts are executable:
+
+```bash
+chmod +x run-*.sh
+```
+
+Run a script from the project root:
+
+```bash
+./run-tests.sh
+./run-performance-tests.sh chrome
+./run-a11y-tests.sh
+```
+
+Each script prints usage instructions if run with `-h` or `--help`.
+
+> **Note:** These scripts are intended for use in macOS and Linux. For Windows, use WSL or adapt the scripts as needed.
 
 ## Testing
 
@@ -258,6 +336,57 @@ Test status across browsers:
 - Edge: ✅ All tests passing
 - Firefox: ⚠️ Some PDF operations may require additional handling
 
+## Playwright Testing
+
+This project also supports [Playwright](https://playwright.dev/) for browser automation and end-to-end testing.
+
+### Running Playwright Tests
+
+```bash
+# Run all Playwright tests
+npx playwright test
+
+# Run Playwright tests in a specific browser
+npx playwright test --project=chromium
+npx playwright test --project=firefox
+npx playwright test --project=webkit
+
+# Open Playwright Test Runner UI
+npx playwright test --ui
+```
+
+### Playwright Test Files
+
+Playwright test files are located in the `tests/` directory:
+
+```bash
+tests/
+├── browser-compatibility.spec.ts  # Cross-browser compatibility tests
+└── ...                            # Add your Playwright tests here
+```
+
+### Playwright Features
+- Cross-browser testing (Chromium, Firefox, WebKit)
+- Headless and headed modes
+- Powerful selectors and assertions
+- Parallel test execution
+- Rich HTML reports (see `playwright-report/` after running tests)
+
+### Playwright Reports
+After running Playwright tests, view the HTML report:
+
+```bash
+npx playwright show-report
+```
+
+For more details, see the [Playwright documentation](https://playwright.dev/).
+
+## Screenshots
+
+![PDF Splitter on Vercel](images/vercel-screenshot.png)
+![Responsive UI](images/responsive-ui.png)
+![Browser Compatibility](images/browser-compatibility.png)
+
 ## Contributing
 
 Contributions are welcome! If you'd like to contribute to this project:
@@ -295,53 +424,6 @@ Check out the [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 - No data is sent to any server
 - Files are never stored on the server
 - File size limit (100MB) prevents browser performance issues
-
-## Testing
-
-The application has a comprehensive test suite using Cypress for both component and end-to-end tests:
-
-- **Component Tests**: Test individual React components in isolation
-- **End-to-End Tests**: Test the full application from a user perspective
-- **Browser Compatibility Tests**: Verify application works in different browsers
-- **Responsive UI Tests**: Ensure the UI adapts properly to different screen sizes
-- **PDF Utilities Tests**: Unit tests for the PDF processing functions
-
-To run tests:
-
-```bash
-# Run all tests
-npm test
-
-# Run only component tests
-npm run test:component
-
-# Run only E2E tests (recommended)
-npm run test:e2e
-
-# Run browser-specific tests
-npm run test:chrome
-npm run test:firefox
-npm run test:safari
-npm run test:browsers  # Run tests in all browsers
-
-# Run UI responsiveness tests
-npm run cypress run --spec "cypress/e2e/responsive-ui.cy.ts"
-
-# Run browser compatibility tests
-npm run cypress run --spec "cypress/e2e/browser-compatibility.cy.ts"
-
-# Run performance tests
-npm run cypress run --spec "cypress/e2e/performance.cy.ts"
-# or use our custom script
-./run-performance-tests.sh [browser] [target]
-
-# Open Cypress UI for interactive testing
-npm run cypress
-```
-
-**Note:** For continuous integration or deployment workflows, we recommend using the E2E tests (`npm run test:e2e`), which are more stable and better represent real user experiences. The responsive UI, browser compatibility, and performance tests ensure that the application works well across different device sizes, browsers, and maintains optimal performance.
-
-See [cypress/README.md](cypress/README.md) for detailed testing documentation.
 
 ## Accessibility
 
