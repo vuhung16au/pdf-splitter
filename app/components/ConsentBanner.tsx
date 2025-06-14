@@ -45,8 +45,7 @@ export default function ConsentBanner() {
     <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 p-4 shadow-lg border-t border-gray-200 dark:border-gray-700 z-50">
       <div className="max-w-screen-xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="text-sm text-gray-700 dark:text-gray-300">
-          This website uses cookies to analyze site traffic. 
-          <a href="/privacy" className="underline ml-1">Learn more</a>
+          This website uses cookies to analyze site traffic.
         </div>
         <div className="flex gap-2">
           <button
