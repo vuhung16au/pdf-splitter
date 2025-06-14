@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import GoogleAnalytics from "./components/GoogleAnalytics";
 import ConsentBanner from "./components/ConsentBanner";
+import { Suspense } from "react";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -24,7 +25,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <GoogleAnalytics />
+        <Suspense fallback={null}>
+          <GoogleAnalytics />
+        </Suspense>
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-white dark:bg-gray-950`}>
         {children}
