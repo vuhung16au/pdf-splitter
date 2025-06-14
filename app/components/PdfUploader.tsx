@@ -5,6 +5,7 @@ import { splitPdfToSinglePages, saveSplitPdfAsZip } from "../lib/pdfUtils";
 import DragDropArea from "./DragDropArea";
 import ErrorBoundary from "./ErrorBoundary";
 import { validatePdfFile, sanitizeFilename } from '../lib/validation';
+import { trackUpload, trackSplit, trackDownload, trackError } from '../lib/analytics';
 import JSZip from 'jszip';
 import pdfjsLib from 'pdfjs-dist';
 
@@ -39,15 +40,22 @@ export default function PdfUploader() {
     if (acceptedFiles.length === 0) return;
     const oversized = acceptedFiles.find(f => f.size > MAX_FILE_SIZE);
     if (oversized) {
-      setError(`File \"${oversized.name}\" exceeds the 100MB size limit.`);
+      const errorMsg = `File \"${oversized.name}\" exceeds the 100MB size limit.`;
+      setError(errorMsg);
+      trackError(errorMsg, 'file_upload');
       return;
     }
+    
+    // Track successful upload
+    trackUpload(acceptedFiles.length);
     setUploadedFiles(prev => [...prev, ...acceptedFiles]);
   }, []);
 
   const handleProcessFiles = async () => {
     if (uploadedFiles.length === 0) {
-      setError("Please upload at least one PDF file");
+      const errorMsg = "Please upload at least one PDF file";
+      setError(errorMsg);
+      trackError(errorMsg, 'process_files');
       return;
     }
 
@@ -55,28 +63,47 @@ export default function PdfUploader() {
       setIsLoading(true);
       setError(null);
       setProcessingStatus("Reading PDF files...");
+      
+      // Count total pages for analytics
+      let totalPages = 0;
+      
       for (const file of uploadedFiles) {
         if (!validatePdfFile(file)) {
-          throw new Error(`File \"${file.name}\" is not a valid PDF`);
+          const errorMsg = `File \"${file.name}\" is not a valid PDF`;
+          trackError(errorMsg, 'pdf_validation');
+          throw new Error(errorMsg);
         }
       }
+      
       setProcessingStatus("Splitting pages...");
       const zipBlob = await splitPdfToSinglePages(uploadedFiles).catch(err => {
         console.error("Error while splitting PDFs:", err);
+        trackError(`Failed to split PDF: ${err.message || 'Unknown error'}`, 'pdf_splitting');
         throw new Error(`Failed to split PDF: ${err.message || 'Unknown error'}`);
       });
+      
+      // Track successful split
+      trackSplit(uploadedFiles.length);
+      
       setProcessingStatus("Creating ZIP archive...");
       await saveSplitPdfAsZip(zipBlob).catch(err => {
         console.error("Error while creating ZIP:", err);
+        trackError(`Failed to create ZIP file: ${err.message || 'Unknown error'}`, 'zip_creation');
         throw new Error(`Failed to create ZIP file: ${err.message || 'Unknown error'}`);
       });
+      
+      // Track download
+      trackDownload();
+      
       setProcessingStatus("Done! Your download should start automatically.");
       setTimeout(() => {
         setProcessingStatus("");
       }, 3000);
     } catch (err) {
       console.error("Error processing PDFs:", err);
-      setError(`${err instanceof Error ? err.message : "Error processing PDF files. Please try again."}`);
+      const errorMsg = `${err instanceof Error ? err.message : "Error processing PDF files. Please try again."}`;
+      setError(errorMsg);
+      trackError(errorMsg, 'pdf_processing');
     } finally {
       setIsLoading(false);
       await new Promise(res => setTimeout(res, 3000));

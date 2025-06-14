@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import GoogleAnalytics from "./components/GoogleAnalytics";
+import ConsentBanner from "./components/ConsentBanner";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -21,8 +23,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <GoogleAnalytics />
+      </head>
       <body className={`${inter.variable} font-sans antialiased bg-white dark:bg-gray-950`}>
         {children}
+        <ConsentBanner />
       </body>
     </html>
   );
