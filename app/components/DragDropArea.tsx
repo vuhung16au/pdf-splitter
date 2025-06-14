@@ -189,7 +189,10 @@ export default function DragDropArea({ onFilesDrop, isLoading }: DragDropAreaPro
             or{" "}
             <span 
               className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer" 
-              onClick={handleButtonClick}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleButtonClick();
+              }}
             >
               click to select PDF files
             </span>
