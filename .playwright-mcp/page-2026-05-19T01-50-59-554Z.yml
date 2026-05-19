@@ -1,0 +1,288 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - link "Skip to content" [ref=e4] [cursor=pointer]:
+      - /url: "#start-of-content"
+    - banner [ref=e6]:
+      - heading "Navigation Menu" [level=2] [ref=e7]
+      - generic [ref=e8]:
+        - link "Homepage" [ref=e10] [cursor=pointer]:
+          - /url: /
+          - img [ref=e11]
+        - generic [ref=e13]:
+          - navigation "Global" [ref=e16]:
+            - list [ref=e17]:
+              - listitem [ref=e18]:
+                - button "Platform" [ref=e20] [cursor=pointer]:
+                  - text: Platform
+                  - img [ref=e21]
+              - listitem [ref=e23]:
+                - button "Solutions" [ref=e25] [cursor=pointer]:
+                  - text: Solutions
+                  - img [ref=e26]
+              - listitem [ref=e28]:
+                - button "Resources" [ref=e30] [cursor=pointer]:
+                  - text: Resources
+                  - img [ref=e31]
+              - listitem [ref=e33]:
+                - button "Open Source" [ref=e35] [cursor=pointer]:
+                  - text: Open Source
+                  - img [ref=e36]
+              - listitem [ref=e38]:
+                - button "Enterprise" [ref=e40] [cursor=pointer]:
+                  - text: Enterprise
+                  - img [ref=e41]
+              - listitem [ref=e43]:
+                - link "Pricing" [ref=e44] [cursor=pointer]:
+                  - /url: https://github.com/pricing
+                  - generic [ref=e45]: Pricing
+          - generic [ref=e46]:
+            - button "Search or jump to…" [ref=e49] [cursor=pointer]:
+              - img [ref=e51]
+            - link "Sign in" [ref=e54] [cursor=pointer]:
+              - /url: /login?return_to=https%3A%2F%2Fgithub.com%2Fvuhung16au%2Fpdf-splitter%2Fissues
+            - link "Sign up" [ref=e55] [cursor=pointer]:
+              - /url: /signup?ref_cta=Sign+up&ref_loc=header+logged+out&ref_page=%2F%3Cuser-name%3E%2F%3Crepo-name%3E%2Fissues%2Findex&source=header-repo&source_repo=vuhung16au%2Fpdf-splitter
+            - button "Appearance settings" [disabled] [ref=e58]:
+              - img
+  - main [ref=e62]:
+    - generic [ref=e63]:
+      - generic [ref=e64]:
+        - generic [ref=e66]:
+          - img [ref=e67]
+          - link "vuhung16au" [ref=e70] [cursor=pointer]:
+            - /url: /vuhung16au
+          - generic [ref=e71]: /
+          - strong [ref=e72]:
+            - link "pdf-splitter" [ref=e73] [cursor=pointer]:
+              - /url: /vuhung16au/pdf-splitter
+          - generic [ref=e74]: Public
+        - generic [ref=e75]:
+          - list:
+            - listitem [ref=e76]:
+              - link "You must be signed in to change notification settings" [ref=e77] [cursor=pointer]:
+                - /url: /login?return_to=%2Fvuhung16au%2Fpdf-splitter
+                - img [ref=e78]
+                - text: Notifications
+            - listitem [ref=e80]:
+              - link "Fork 0" [ref=e81] [cursor=pointer]:
+                - /url: /login?return_to=%2Fvuhung16au%2Fpdf-splitter
+                - img [ref=e82]
+                - text: Fork
+                - generic "0" [ref=e84]
+            - listitem [ref=e85]:
+              - link "You must be signed in to star a repository" [ref=e87] [cursor=pointer]:
+                - /url: /login?return_to=%2Fvuhung16au%2Fpdf-splitter
+                - img [ref=e88]
+                - text: Star
+                - generic "4 users starred this repository" [ref=e90]: "4"
+      - navigation "Repository" [ref=e91]:
+        - list [ref=e92]:
+          - listitem [ref=e93]:
+            - link "Code" [ref=e94] [cursor=pointer]:
+              - /url: /vuhung16au/pdf-splitter
+              - img [ref=e95]
+              - generic [ref=e97]: Code
+          - listitem [ref=e98]:
+            - link "Issues 3" [ref=e99] [cursor=pointer]:
+              - /url: /vuhung16au/pdf-splitter/issues
+              - img [ref=e100]
+              - generic [ref=e103]: Issues
+              - generic "3" [ref=e104]
+          - listitem [ref=e105]:
+            - link "Pull requests 11" [ref=e106] [cursor=pointer]:
+              - /url: /vuhung16au/pdf-splitter/pulls
+              - img [ref=e107]
+              - generic [ref=e109]: Pull requests
+              - generic "11" [ref=e110]
+          - listitem [ref=e111]:
+            - link "Actions" [ref=e112] [cursor=pointer]:
+              - /url: /vuhung16au/pdf-splitter/actions
+              - img [ref=e113]
+              - generic [ref=e115]: Actions
+          - listitem [ref=e116]:
+            - link "Projects" [ref=e117] [cursor=pointer]:
+              - /url: /vuhung16au/pdf-splitter/projects
+              - img [ref=e118]
+              - generic [ref=e120]: Projects
+          - listitem [ref=e121]:
+            - link "Security and quality" [ref=e122] [cursor=pointer]:
+              - /url: /vuhung16au/pdf-splitter/security
+              - img [ref=e123]
+              - generic [ref=e125]: Security and quality
+          - listitem [ref=e126]:
+            - link "Insights" [ref=e127] [cursor=pointer]:
+              - /url: /vuhung16au/pdf-splitter/pulse
+              - img [ref=e128]
+              - generic [ref=e130]: Insights
+    - generic [ref=e143]:
+      - heading "Issues" [level=1] [ref=e144]
+      - generic [ref=e145]:
+        - generic [ref=e147]:
+          - form "Search Issues" [ref=e149]:
+            - generic [ref=e150]: Search Issues
+            - generic [ref=e152]:
+              - generic [ref=e154]:
+                - generic [ref=e155]:
+                  - generic [ref=e156]:
+                    - text: "is:"
+                    - generic [ref=e157]: issue
+                  - generic [ref=e159]:
+                    - text: "state:"
+                    - generic [ref=e160]: open
+                - combobox "Search Issues" [ref=e163]: is:issue state:open
+              - button "Search" [ref=e164] [cursor=pointer]:
+                - img [ref=e165]
+          - generic [ref=e167]:
+            - link "Labels" [ref=e168] [cursor=pointer]:
+              - /url: /vuhung16au/pdf-splitter/labels
+              - generic [ref=e169]:
+                - generic:
+                  - img
+                - generic [ref=e170]: Labels
+            - link "Milestones" [ref=e171] [cursor=pointer]:
+              - /url: /vuhung16au/pdf-splitter/milestones
+              - generic [ref=e172]:
+                - generic:
+                  - img
+                - generic [ref=e173]: Milestones
+            - link "New issue" [ref=e174] [cursor=pointer]:
+              - /url: /login?return_to=https://github.com/vuhung16au/pdf-splitter/issues
+              - generic [ref=e176]: New issue
+        - generic [ref=e180]:
+          - heading "Search results" [level=2] [ref=e181]
+          - generic [ref=e182]:
+            - generic [ref=e183]:
+              - link "Open" [ref=e184] [cursor=pointer]:
+                - /url: ""
+                - generic [ref=e185]: Open
+              - link "Closed" [ref=e187] [cursor=pointer]:
+                - /url: ""
+                - generic [ref=e188]: Closed
+            - toolbar "Actions" [ref=e190]:
+              - generic [ref=e191]:
+                - button "Filter by author" [ref=e193] [cursor=pointer]:
+                  - generic [ref=e194]:
+                    - generic [ref=e195]: Author
+                    - generic:
+                      - img
+                - button "Filter by label" [ref=e197] [cursor=pointer]:
+                  - generic [ref=e198]:
+                    - generic [ref=e199]: Labels
+                    - generic:
+                      - img
+                - button "Filter by project" [ref=e201] [cursor=pointer]:
+                  - generic [ref=e202]:
+                    - generic [ref=e203]: Projects
+                    - generic:
+                      - img
+                - button "Filter by milestone" [ref=e205] [cursor=pointer]:
+                  - generic [ref=e206]:
+                    - generic [ref=e207]: Milestones
+                    - generic:
+                      - img
+                - button "Filter by assignees" [ref=e209] [cursor=pointer]:
+                  - generic [ref=e210]:
+                    - generic [ref=e211]: Assignees
+                    - generic:
+                      - img
+                - button "Sort by Newest , descending" [ref=e213] [cursor=pointer]:
+                  - generic [ref=e214]:
+                    - generic:
+                      - img
+                    - generic [ref=e215]:
+                      - generic [ref=e216]: Sort by
+                      - text: Newest
+                      - generic [ref=e217]: ", descending"
+                  - generic:
+                    - img
+          - list "Search results" [ref=e218]:
+            - listitem "More information available below." [ref=e221]:
+              - heading "Expose API to split" [level=3] [ref=e223]:
+                - link "Expose API to split" [ref=e224] [cursor=pointer]:
+                  - /url: /vuhung16au/pdf-splitter/issues/8
+                  - generic [ref=e225]: Expose API to split
+              - generic [ref=e230]:
+                - img [ref=e232]
+                - generic [ref=e235]: "Status: Open."
+              - generic [ref=e239]:
+                - generic [ref=e240]:
+                  - generic [ref=e241]: "#8"
+                  - generic [ref=e242]: In vuhung16au/pdf-splitter;
+                - generic [ref=e243]:
+                  - text: ·
+                  - link "vuhung16au" [ref=e244] [cursor=pointer]:
+                    - /url: /vuhung16au/pdf-splitter/issues?q=is%3Aissue%20state%3Aopen%20author%3Avuhung16au
+                  - text: opened
+                  - generic "May 19, 2025, 3:31 PM GMT+10" [ref=e245]: on May 19, 2025on May 19, 2025
+            - listitem "More information available below." [ref=e249]:
+              - heading "test safari playwright-webkit." [level=3] [ref=e251]:
+                - link "test safari playwright-webkit." [ref=e252] [cursor=pointer]:
+                  - /url: /vuhung16au/pdf-splitter/issues/7
+                  - generic [ref=e253]: test safari playwright-webkit.
+              - generic [ref=e258]:
+                - img [ref=e260]
+                - generic [ref=e263]: "Status: Open."
+              - generic [ref=e267]:
+                - generic [ref=e268]:
+                  - generic [ref=e269]: "#7"
+                  - generic [ref=e270]: In vuhung16au/pdf-splitter;
+                - generic [ref=e271]:
+                  - text: ·
+                  - link "vuhung16au" [ref=e272] [cursor=pointer]:
+                    - /url: /vuhung16au/pdf-splitter/issues?q=is%3Aissue%20state%3Aopen%20author%3Avuhung16au
+                  - text: opened
+                  - generic "May 19, 2025, 3:15 PM GMT+10" [ref=e273]: on May 19, 2025on May 19, 2025
+            - listitem "More information available below." [ref=e277]:
+              - 'heading "UI Improvements: Progress Indicator" [level=3] [ref=e279]':
+                - 'link "UI Improvements: Progress Indicator" [ref=e280] [cursor=pointer]':
+                  - /url: /vuhung16au/pdf-splitter/issues/2
+                  - generic [ref=e281]: "UI Improvements: Progress Indicator"
+              - generic [ref=e286]:
+                - img [ref=e288]
+                - generic [ref=e291]: "Status: Open."
+              - generic [ref=e295]:
+                - generic [ref=e296]:
+                  - generic [ref=e297]: "#2"
+                  - generic [ref=e298]: In vuhung16au/pdf-splitter;
+                - generic [ref=e299]:
+                  - text: ·
+                  - link "vuhung16au" [ref=e300] [cursor=pointer]:
+                    - /url: /vuhung16au/pdf-splitter/issues?q=is%3Aissue%20state%3Aopen%20author%3Avuhung16au
+                  - text: opened
+                  - generic "May 19, 2025, 11:40 AM GMT+10" [ref=e301]: on May 19, 2025on May 19, 2025
+  - contentinfo [ref=e303]:
+    - heading "Footer" [level=2] [ref=e304]
+    - generic [ref=e305]:
+      - generic [ref=e306]:
+        - link "GitHub Homepage" [ref=e307] [cursor=pointer]:
+          - /url: https://github.com
+          - img [ref=e308]
+        - generic [ref=e310]: © 2026 GitHub, Inc.
+      - navigation "Footer" [ref=e311]:
+        - heading "Footer navigation" [level=3] [ref=e312]
+        - list "Footer navigation" [ref=e313]:
+          - listitem [ref=e314]:
+            - link "Terms" [ref=e315] [cursor=pointer]:
+              - /url: https://docs.github.com/site-policy/github-terms/github-terms-of-service
+          - listitem [ref=e316]:
+            - link "Privacy" [ref=e317] [cursor=pointer]:
+              - /url: https://docs.github.com/site-policy/privacy-policies/github-privacy-statement
+          - listitem [ref=e318]:
+            - link "Security" [ref=e319] [cursor=pointer]:
+              - /url: https://github.com/security
+          - listitem [ref=e320]:
+            - link "Status" [ref=e321] [cursor=pointer]:
+              - /url: https://www.githubstatus.com/
+          - listitem [ref=e322]:
+            - link "Community" [ref=e323] [cursor=pointer]:
+              - /url: https://github.community/
+          - listitem [ref=e324]:
+            - link "Docs" [ref=e325] [cursor=pointer]:
+              - /url: https://docs.github.com/
+          - listitem [ref=e326]:
+            - link "Contact" [ref=e327] [cursor=pointer]:
+              - /url: https://support.github.com?tags=dotcom-footer
+          - listitem [ref=e328]:
+            - button "Manage cookies" [ref=e330] [cursor=pointer]
+          - listitem [ref=e331]:
+            - button "Do not share my personal information" [ref=e333] [cursor=pointer]
